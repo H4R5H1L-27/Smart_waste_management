@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CivicLens - Waste Management Live Map</title>
+<link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          primary: "#10b981",
+          "background-light": "#f5f7f8",
+          "background-dark": "#0f172a",
+        },
+        fontFamily: { display: ["Space Grotesk", "sans-serif"] },
+        borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+      },
+    },
+  };
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24; }
+  body { min-height: max(884px, 100dvh); }
+  #real-map { position: absolute; inset: 0; }
+  .leaflet-container { background: #0b0f14; }
+  
+  /* Custom Leaflet Marker Styling */
+  .waste-pin-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+  .waste-pin-container:hover {
+    transform: scale(1.12);
+    z-index: 1000 !important;
+  }
+  .waste-pin-bubble {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    white-space: nowrap;
+    margin-bottom: 2px;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  .waste-pin-dot {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow: 0 0 16px rgba(0,0,0,0.5);
+    border: 2px solid #ffffff;
+    position: relative;
+  }
+  
+  /* Status Color Themes */
+  .pin-critical { background: #ef4444; }
+  .pin-critical .waste-pin-dot { background: #ef4444; }
+  .pin-critical .waste-pin-bubble { background: #b91c1c; }
+  
+  .pin-pending { background: #f59e0b; }
+  .pin-pending .waste-pin-dot { background: #f59e0b; }
+  .pin-pending .waste-pin-bubble { background: #b45309; }
+
+  .pin-in-progress { background: #0284c7; }
+  .pin-in-progress .waste-pin-dot { background: #0284c7; }
+  .pin-in-progress .waste-pin-bubble { background: #0369a1; }
+
+  .pin-resolved { background: #10b981; }
+  .pin-resolved .waste-pin-dot { background: #10b981; }
+  .pin-resolved .waste-pin-bubble { background: #047857; }
+
+  /* Pulsing Ring for Critical Bins & Overflows */
+  @keyframes pin-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+    70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+  }
+  .pulse-critical .waste-pin-dot {
+    animation: pin-pulse 1.8s infinite;
+  }
+
+  .pulse-user .waste-pin-dot {
+    animation: user-pulse 2s infinite;
+  }
+  @keyframes user-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.8); }
+    70% { box-shadow: 0 0 0 16px rgba(59, 130, 246, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+  }
+</style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-900 dark:text-gray-100">
+<div class="relative flex h-screen flex-col overflow-hidden">
+  
+  <!-- Header -->
+  <header class="flex items-center justify-between p-3 z-20 bg-slate-900/90 backdrop-blur border-b border-slate-800">
+    <button class="flex h-10 w-10 items-center justify-center rounded-full text-gray-400 hover:text-white hover:bg-slate-800 transition" id="back-btn">
+      <span class="material-symbols-outlined"> arrow_back </span>
+    </button>
+    <div class="text-center">
+      <h1 class="text-base font-bold text-white flex items-center justify-center gap-1.5" data-i18n-key="nearby_issues_title">
+        <span class="material-symbols-outlined text-emerald-400 text-lg">delete</span>
+        Waste Hotspots &amp; Smart Bins
+      </h1>
+      <p class="text-[11px] text-emerald-400 font-medium" id="stats-banner">Connecting live to 158 City Bins &amp; Citizen Reports</p>
+    </div>
+    <select data-lang-selector class="rounded-full bg-slate-800 text-gray-100 text-xs px-2.5 py-1 border border-slate-700"></select>
+  </header>
+
+  <!-- Filter Pills -->
+  <div class="flex space-x-2 overflow-x-auto px-4 py-2.5 z-20 bg-slate-900/80 backdrop-blur border-b border-slate-800/60 no-scrollbar" id="status-filters">
+    <button class="whitespace-nowrap rounded-full bg-emerald-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow" data-filter="all">All Points (<span id="count-all">0</span>)</button>
+    <button class="whitespace-nowrap rounded-full bg-slate-800 hover:bg-slate-700 px-3.5 py-1.5 text-xs font-medium text-rose-400 border border-rose-500/30" data-filter="critical">🚨 Critical / Overflows (<span id="count-critical">0</span>)</button>
+    <button class="whitespace-nowrap rounded-full bg-slate-800 hover:bg-slate-700 px-3.5 py-1.5 text-xs font-medium text-amber-400 border border-amber-500/30" data-filter="pending">⏳ Pending (<span id="count-pending">0</span>)</button>
+    <button class="whitespace-nowrap rounded-full bg-slate-800 hover:bg-slate-700 px-3.5 py-1.5 text-xs font-medium text-sky-400 border border-sky-500/30" data-filter="in-progress">🚚 Dispatched (<span id="count-in-progress">0</span>)</button>
+    <button class="whitespace-nowrap rounded-full bg-slate-800 hover:bg-slate-700 px-3.5 py-1.5 text-xs font-medium text-emerald-400 border border-emerald-500/30" data-filter="resolved">✅ Cleared (<span id="count-resolved">0</span>)</button>
+  </div>
+
+  <!-- Map Canvas & Search Overlay -->
+  <div class="relative flex-1">
+    <div id="real-map" class="z-0"></div>
+    
+    <!-- Address Geocoder Search Box -->
+    <div class="absolute top-3 left-4 right-4 z-10 max-w-md mx-auto">
+      <div class="relative shadow-2xl">
+        <span class="material-symbols-outlined pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"> search </span>
+        <input class="w-full rounded-full border border-slate-700/80 bg-slate-900/90 backdrop-blur py-2.5 pl-10 pr-10 text-xs text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-lg" placeholder="Search address (e.g. Guindy, Anna Nagar, VIT Chennai)..." type="text" id="map-search"/>
+        <button id="locate-btn" class="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-emerald-400 transition" title="Center my location">
+          <span class="material-symbols-outlined text-sm">my_location</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Waste Detail Drawer -->
+  <div class="absolute inset-x-0 bottom-16 z-20 pointer-events-auto">
+    <div class="flex flex-col rounded-t-2xl bg-slate-900/95 backdrop-blur border-t border-slate-700 shadow-2xl max-w-lg mx-auto transition-transform" id="drawer-container">
+      <div class="flex w-full cursor-grab justify-center py-2">
+        <div class="h-1.5 w-12 rounded-full bg-slate-700"></div>
+      </div>
+      <div class="flex items-center gap-4 px-4 pb-3" id="selected-issue">
+        <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400" id="issue-icon-wrap">
+          <span class="material-symbols-outlined text-2xl" id="issue-icon"> delete </span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2">
+            <p class="font-bold text-white text-sm truncate" id="issue-title">Anna Nagar High St - Municipal Bin #12</p>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-rose-500/20 text-rose-400 border border-rose-500/30" id="issue-status-badge">CRITICAL (92%)</span>
+          </div>
+          <p class="text-xs text-slate-300 mt-0.5 line-clamp-1" id="issue-desc">Overflowing plastic and food waste observed on walkway.</p>
+          <p class="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
+            <span class="material-symbols-outlined text-xs">location_on</span>
+            <span id="issue-loc">Greater Chennai Corporation Zone</span>
+          </p>
+        </div>
+        <button class="flex flex-col items-center justify-center gap-0.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-2 text-xs font-semibold text-emerald-400 transition" id="issue-upvote-btn">
+          <span class="material-symbols-outlined text-base"> thumb_up </span>
+          <span id="issue-upvotes">18</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <nav class="sticky bottom-0 z-30 flex border-t border-slate-800 bg-slate-950/95 backdrop-blur">
+    <a class="flex flex-1 flex-col items-center gap-1 py-2 text-gray-400 hover:text-white" href="#" data-link="home">
+      <span class="material-symbols-outlined text-xl"> home </span>
+      <span class="text-[11px]" data-i18n-key="nav_home">Home</span>
+    </a>
+    <a class="flex flex-1 flex-col items-center gap-1 py-2 text-gray-400 hover:text-white" href="#" data-link="myreports">
+      <span class="material-symbols-outlined text-xl"> description </span>
+      <span class="text-[11px]" data-i18n-key="nav_reports">My Reports</span>
+    </a>
+    <a class="flex flex-1 flex-col items-center gap-1 py-2 text-emerald-400 font-bold" href="#" data-link="map">
+      <span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1"> map </span>
+      <span class="text-[11px]" data-i18n-key="nav_map">Map</span>
+    </a>
+    <a class="flex flex-1 flex-col items-center gap-1 py-2 text-gray-400 hover:text-white" href="#" data-link="impact">
+      <span class="material-symbols-outlined text-xl"> insights </span>
+      <span class="text-[11px]" data-i18n-key="nav_impact">My Impact</span>
+    </a>
+    <a class="flex flex-1 flex-col items-center gap-1 py-2 text-gray-400 hover:text-white" href="#" data-link="leaderboard">
+      <span class="material-symbols-outlined text-xl"> leaderboard </span>
+      <span class="text-[11px]" data-i18n-key="nav_leaderboard">Leaderboard</span>
+    </a>
+  </nav>
+</div>
+
+<script>
+  let map;
+  let allMarkers = [];
+  let userLocationMarker = null;
+  let currentActiveId = null;
+
+  // Realistic city-wide waste hotspots and fallback seed
+  const FALLBACK_WASTE_POINTS = [
+    { id: 'bin-gymd', title: 'VIT Chennai - ESP32 Node (gymd)', status: 'critical', fill: 94, category: 'trash', lat: 12.8406, lon: 80.1534, upvotes: 28, description: 'Live ultrasonic telemetry node reporting critical overflow fill level (94%).', icon: 'sensors' },
+    { id: 'rep-1', title: 'Anna Nagar Commercial Bin Overflow', status: 'critical', fill: 91, category: 'trash', lat: 13.0878, lon: 80.2088, upvotes: 19, description: 'Double municipal bins overflowing with cardboard and street food packaging.', icon: 'delete_forever' },
+    { id: 'rep-2', title: 'T. Nagar Ranganathan St Plastics', status: 'in-progress', fill: 74, category: 'plastic', lat: 13.0418, lon: 80.2341, upvotes: 24, description: 'Plastic shopping bags and beverage bottles accumulated; GCC truck dispatched.', icon: 'recycling' },
+    { id: 'rep-3', title: 'Marina Beach Promenade Litter', status: 'pending', fill: 88, category: 'trash', lat: 13.0500, lon: 80.2824, upvotes: 31, description: 'Post-market food wrappers and coconut shells overflowing public bins.', icon: 'delete' },
+    { id: 'rep-4', title: 'Adyar Canal Green Belt Cleanup', status: 'resolved', fill: 20, category: 'trash', lat: 13.0064, lon: 80.2575, upvotes: 42, description: 'Community citizen report successfully resolved; municipal crew completed pickup.', icon: 'check_circle' },
+    { id: 'rep-5', title: 'Kandigai Market Organic Waste', status: 'in-progress', fill: 78, category: 'organic', lat: 12.8472, lon: 80.1448, upvotes: 14, description: 'Vegetable market wet waste pile awaiting scheduled compost collection vehicle.', icon: 'compost' },
+    { id: 'rep-6', title: 'Velachery Bypass Plastic Waste', status: 'pending', fill: 82, category: 'plastic', lat: 12.9798, lon: 80.2185, upvotes: 16, description: 'Dry recyclables and packaging material awaiting segregation pickup.', icon: 'recycling' },
+    { id: 'rep-7', title: 'Guindy Industrial Hazardous E-Waste', status: 'critical', fill: 96, category: 'hazardous', lat: 13.0067, lon: 80.2025, upvotes: 37, description: 'Discarded electronic parts and battery pack refuse requiring certified hazardous clearance.', icon: 'warning' },
+    { id: 'rep-8', title: 'Mylapore Temple Tank Street Litter', status: 'resolved', fill: 15, category: 'trash', lat: 13.0334, lon: 80.2690, upvotes: 26, description: 'Street sweeping sanitation team completed morning trash collection.', icon: 'check_circle' }
+  ];
+
+  function getCategoryIcon(cat) {
+    if (!cat) return 'delete';
+    cat = cat.toLowerCase();
+    if (cat.includes('plastic')) return 'recycling';
+    if (cat.includes('organic') || cat.includes('food')) return 'compost';
+    if (cat.includes('hazard') || cat.includes('e-waste')) return 'warning';
+    if (cat.includes('overflow')) return 'delete_forever';
+    return 'delete';
+  }
+
+  function createWastePinElement(item) {
+    const isCritical = item.status === 'critical' || (item.fill && item.fill >= 80);
+    const statusClass = item.isUserReport ? 'pin-resolved pulse-user' : (isCritical ? 'pin-critical pulse-critical' : ('pin-' + (item.status || 'pending')));
+    const iconName = item.isUserReport ? 'verified' : (item.icon || getCategoryIcon(item.category));
+    const badgeText = item.isUserReport ? `⭐ YOUR REPORT (#CL-${item.rawId})` : (item.fill ? `${item.fill}%` : (item.status === 'resolved' ? 'RESOLVED' : (item.status === 'in-progress' ? 'ACTIVE' : 'PENDING')));
+
+    const el = document.createElement('div');
+    el.className = `waste-pin-container ${statusClass}`;
+    if (item.isUserReport) {
+      el.style.transform = 'scale(1.2)';
+      el.style.zIndex = '9999';
+    }
+    el.innerHTML = `
+      <div class="waste-pin-bubble" style="${item.isUserReport ? 'background:#059669;border:1.5px solid #34d399;font-weight:900;' : ''}">
+        <span>${badgeText}</span>
+        <span class="material-symbols-outlined text-[12px]">thumb_up</span>
+        <span class="pin-upvote-text">${item.upvotes || 0}</span>
+      </div>
+      <div class="waste-pin-dot" style="${item.isUserReport ? 'border:3px solid #fbbf24;box-shadow:0 0 16px #10b981;' : ''}">
+        <span class="material-symbols-outlined text-sm font-bold">${iconName}</span>
+      </div>
+    `;
+    return el;
+  }
+
+  function renderMapMarkers(dataItems, filter = 'all') {
+    // Clear existing markers
+    allMarkers.forEach(m => m.layer.remove());
+    allMarkers = [];
+
+    let countAll = 0, countCritical = 0, countPending = 0, countInProgress = 0, countResolved = 0;
+
+    dataItems.forEach(item => {
+      const isCritical = item.status === 'critical' || (item.fill && item.fill >= 80);
+      countAll++;
+      if (isCritical) countCritical++;
+      if (item.status === 'pending') countPending++;
+      if (item.status === 'in-progress') countInProgress++;
+      if (item.status === 'resolved') countResolved++;
+
+      // Filter check
+      let shouldShow = false;
+      if (filter === 'all') shouldShow = true;
+      else if (filter === 'critical') shouldShow = isCritical;
+      else if (filter === 'pending') shouldShow = (item.status === 'pending' && !isCritical);
+      else if (filter === 'in-progress') shouldShow = item.status === 'in-progress';
+      else if (filter === 'resolved') shouldShow = item.status === 'resolved';
+
+      if (!shouldShow) return;
+
+      const domNode = createWastePinElement(item);
+      const icon = L.divIcon({
+        className: 'custom-leaflet-waste-pin',
+        html: domNode,
+        iconSize: [60, 60],
+        iconAnchor: [30, 56]
+      });
+
+      const marker = L.marker([item.lat, item.lon], { icon }).addTo(map);
+
+      // Tooltip / Popup
+      marker.bindPopup(`
+        <div class="p-2 text-slate-900 font-sans min-w-[180px]">
+          <div class="font-bold text-xs">${item.title}</div>
+          <div class="text-[11px] text-slate-600 mt-0.5">${item.description}</div>
+          <div class="mt-2 flex items-center justify-between text-[11px] font-semibold text-emerald-600">
+            <span>Status: ${(item.status || '').toUpperCase()}</span>
+            <span>👍 ${item.upvotes || 0}</span>
+          </div>
+        </div>
+      `);
+
+      marker.on('click', () => {
+        selectIssueCard(item);
+      });
+
+      allMarkers.push({ item, layer: marker, domNode });
+    });
+
+    // Update filter counts
+    document.getElementById('count-all').textContent = countAll;
+    document.getElementById('count-critical').textContent = countCritical;
+    document.getElementById('count-pending').textContent = countPending;
+    document.getElementById('count-in-progress').textContent = countInProgress;
+    document.getElementById('count-resolved').textContent = countResolved;
+  }
+
+  function selectIssueCard(item) {
+    currentActiveId = item.id;
+    const titleEl = document.getElementById('issue-title');
+    const descEl = document.getElementById('issue-desc');
+    const badgeEl = document.getElementById('issue-status-badge');
+    const iconEl = document.getElementById('issue-icon');
+    const iconWrap = document.getElementById('issue-icon-wrap');
+    const upvotesEl = document.getElementById('issue-upvotes');
+    const locEl = document.getElementById('issue-loc');
+
+    if (titleEl) titleEl.textContent = item.title;
+    if (descEl) descEl.textContent = item.description;
+    if (upvotesEl) upvotesEl.textContent = item.upvotes || 0;
+    if (locEl) locEl.textContent = `${item.lat.toFixed(4)}, ${item.lon.toFixed(4)} • Chennai`;
+
+    const iconName = item.icon || getCategoryIcon(item.category);
+    if (iconEl) iconEl.textContent = iconName;
+
+    const isCritical = item.status === 'critical' || (item.fill && item.fill >= 80);
+
+    if (badgeEl) {
+      if (isCritical) {
+        badgeEl.textContent = `CRITICAL (${item.fill ? item.fill + '%' : 'HIGH'})`;
+        badgeEl.className = 'px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-rose-500/20 text-rose-400 border border-rose-500/40';
+        iconWrap.className = 'flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-rose-500/20 border border-rose-500/40 text-rose-400';
+      } else if (item.status === 'resolved') {
+        badgeEl.textContent = 'RESOLVED';
+        badgeEl.className = 'px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/40';
+        iconWrap.className = 'flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400';
+      } else if (item.status === 'in-progress') {
+        badgeEl.textContent = 'DISPATCHED';
+        badgeEl.className = 'px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-sky-500/20 text-sky-400 border border-sky-500/40';
+        iconWrap.className = 'flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-sky-500/20 border border-sky-500/40 text-sky-400';
+      } else {
+        badgeEl.textContent = 'PENDING';
+        badgeEl.className = 'px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-amber-500/20 text-amber-400 border border-amber-500/40';
+        iconWrap.className = 'flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400';
+      }
+    }
+
+    map.panTo([item.lat, item.lon], { animate: true, duration: 0.6 });
+  }
+
+  // Upvote handling
+  document.getElementById('issue-upvote-btn')?.addEventListener('click', function() {
+    if (!currentActiveId) return;
+    const target = allMarkers.find(m => m.item.id === currentActiveId);
+    if (!target) return;
+    target.item.upvotes = (target.item.upvotes || 0) + 1;
+    document.getElementById('issue-upvotes').textContent = target.item.upvotes;
+    const bubbleUpvote = target.domNode.querySelector('.pin-upvote-text');
+    if (bubbleUpvote) bubbleUpvote.textContent = target.item.upvotes;
+    
+    // Animate button
+    this.classList.add('scale-110', 'text-white', 'bg-emerald-600');
+    setTimeout(() => {
+      this.classList.remove('scale-110', 'text-white', 'bg-emerald-600');
+    }, 300);
+  });
+
+  async function fetchBackendData() {
+    const focusId = localStorage.getItem('focusReportId') || localStorage.getItem('lastSubmittedReportId');
+    let realReports = [];
+
+    try {
+      // 1. Fetch real citizen reports from backend API
+      const resReports = await fetch('/reports');
+      if (resReports.ok) {
+        const reports = await resReports.json();
+        if (Array.isArray(reports) && reports.length > 0) {
+          realReports = reports.map(r => {
+            const isMatch = focusId && (String(r.id) === String(focusId));
+            return {
+              id: 'rep-' + r.id,
+              rawId: r.id,
+              isUserReport: isMatch || (r.id === reports[0].id && !focusId), // if no focus, latest report is user report
+              title: isMatch ? `⭐ Your Report (#CL-${r.id})` : (r.description ? (r.description.slice(0, 36) + (r.description.length > 36 ? '...' : '')) : `Citizen Report #${r.id}`),
+              status: r.status === 'submitted' ? 'pending' : (r.status || 'pending'),
+              fill: r.severity === 'high' ? 90 : (r.severity === 'medium' ? 65 : 40),
+              category: r.category || 'trash',
+              lat: Number(r.lat) || 12.8424,
+              lon: Number(r.lng) || 80.1536,
+              upvotes: Math.floor(12 + (r.id % 15)),
+              description: r.description || r.message || 'Citizen reported solid waste issue.',
+              icon: isMatch ? 'verified' : getCategoryIcon(r.category)
+            };
+          });
+        }
+      }
+    } catch (e) {
+      console.warn('Reports fetch error:', e);
+    }
+
+    let binPoints = [];
+    try {
+      // 2. Fetch live smart bins (including 158 GCC bins and physical node gymd)
+      const resBins = await fetch('/bins');
+      if (resBins.ok) {
+        const bins = await resBins.json();
+        if (Array.isArray(bins) && bins.length > 0) {
+          binPoints = bins.filter(b => b.fill_percent >= 65 || b.id === 'gymd').map(b => ({
+            id: 'bin-' + b.id,
+            rawId: b.id,
+            isUserReport: false,
+            title: b.name || `Smart Bin #${b.id}`,
+            status: b.fill_percent >= 80 ? 'critical' : (b.fill_percent >= 60 ? 'in-progress' : 'resolved'),
+            fill: Math.round(b.fill_percent),
+            category: 'trash',
+            lat: Number(b.lat),
+            lon: Number(b.lng),
+            upvotes: Math.floor(10 + (b.fill_percent / 4)),
+            description: `IoT Ultrasonic Telemetry: ${b.fill_percent.toFixed(1)}% full. GCC Node ${b.id.toUpperCase()}.`,
+            icon: b.id === 'gymd' ? 'sensors' : (b.fill_percent >= 80 ? 'delete_forever' : 'delete')
+          }));
+        }
+      }
+    } catch (e) {
+      console.warn('Bins fetch error:', e);
+    }
+
+    // Combine: Real reports always first!
+    let combined = [...realReports, ...binPoints];
+    if (combined.length === 0) {
+      combined = [...FALLBACK_WASTE_POINTS];
+    }
+
+    // Deduplicate by ID
+    const unique = [];
+    const seen = new Set();
+    for (const item of combined) {
+      if (!seen.has(item.id)) {
+        seen.add(item.id);
+        unique.push(item);
+      }
+    }
+
+    return unique;
+  }
+
+  function initMap() {
+    const mapDiv = document.getElementById('real-map');
+    map = L.map(mapDiv, { zoomControl: false }).setView([13.0400, 80.2200], 12);
+    
+    // Crisp standard OpenStreetMap tiles (no API watermarks)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    L.control.zoom({ position: 'topright' }).addTo(map);
+
+    // Load Live Data and auto-focus user report
+    fetchBackendData().then(items => {
+      renderMapMarkers(items, 'all');
+
+      const focusId = localStorage.getItem('focusReportId') || localStorage.getItem('lastSubmittedReportId');
+      let targetItem = null;
+
+      if (focusId) {
+        targetItem = items.find(i => String(i.rawId) === String(focusId) || i.id === 'rep-' + focusId);
+      }
+      if (!targetItem) {
+        targetItem = items.find(i => i.isUserReport) || items.find(i => i.status === 'critical') || items[0];
+      }
+
+      if (targetItem) {
+        selectIssueCard(targetItem);
+        map.setView([targetItem.lat, targetItem.lon], 15, { animate: true });
+
+        if (targetItem.isUserReport) {
+          const banner = document.getElementById('stats-banner');
+          if (banner) {
+            banner.innerHTML = `📍 <strong>Focused on Your Report #CL-${targetItem.rawId}</strong> · Under GCC Review`;
+            banner.className = 'text-[11px] text-amber-300 font-bold';
+          }
+        }
+      } else {
+        const allLatLngs = items.map(i => [i.lat, i.lon]);
+        if (allLatLngs.length > 0) {
+          map.fitBounds(L.latLngBounds(allLatLngs), { padding: [40, 40], maxZoom: 14 });
+        }
+      }
+
+      // Filters
+      const filterButtons = document.querySelectorAll('#status-filters button');
+      filterButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+          filterButtons.forEach(b => {
+            b.classList.remove('bg-emerald-600', 'text-white');
+            b.classList.add('bg-slate-800');
+          });
+          this.classList.remove('bg-slate-800');
+          this.classList.add('bg-emerald-600', 'text-white');
+
+          const filter = this.getAttribute('data-filter');
+          renderMapMarkers(items, filter);
+        });
+      });
+    });
+
+    // Locate Me Button
+    document.getElementById('locate-btn')?.addEventListener('click', () => {
+      if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(pos => {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          if (userLocationMarker) userLocationMarker.setLatLng([lat, lon]);
+          else {
+            userLocationMarker = L.circleMarker([lat, lon], {
+              radius: 9, color: '#3b82f6', weight: 3, fillColor: '#60a5fa', fillOpacity: 0.8
+            }).addTo(map);
+          }
+          map.setView([lat, lon], 15);
+        }, () => {
+          alert('Location permission denied. Please allow geolocation.');
+        });
+      }
+    });
+
+    // Search Box Geocoder
+    const searchInput = document.getElementById('map-search');
+    searchInput?.addEventListener('keydown', async (e) => {
+      if (e.key === 'Enter') {
+        const query = searchInput.value.trim();
+        if (!query) return;
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(query + ' Chennai')}`);
+          const results = await res.json();
+          if (results && results[0]) {
+            map.setView([parseFloat(results[0].lat), parseFloat(results[0].lon)], 14);
+          } else {
+            alert('Location not found in Chennai region.');
+          }
+        } catch(err) {
+          console.error('Geocode search failed:', err);
+        }
+      }
+    });
+  }
+
+  // Navigation Links
+  document.querySelectorAll('[data-link]').forEach(link => {
+    link.addEventListener('click', function(e){
+      e.preventDefault();
+      const dest = this.getAttribute('data-link');
+      if (window.MapsTo) {
+        window.MapsTo(dest);
+      } else {
+        const mapToFile = { home: 'homepage.html', myreports: 'myreports.html', map: 'map.html', impact: 'myimpact.html', leaderboard: 'Leaderboard.html' };
+        location.href = mapToFile[dest] || 'homepage.html';
+      }
+    });
+  });
+
+  document.getElementById('back-btn')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    history.back();
+  });
+
+  window.addEventListener('DOMContentLoaded', initMap);
+</script>
+
+<script src="./js/i18n.js"></script>
+<script>
+  (function(){ if (window.CivicI18n) window.CivicI18n.applyTranslations(); })();
+</script>
+</body></html>

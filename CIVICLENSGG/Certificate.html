@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Shareable Certificate</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#0b7ada",
+                        "background-light": "#f5f7f8",
+                        "background-dark": "#101a22",
+                    },
+                    fontFamily: {
+                        display: ["Space Grotesk"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.25rem",
+                        lg: "0.5rem",
+                        xl: "0.75rem",
+                        full: "9999px",
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 1s ease-in-out',
+                        'pulse-slow': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                    }
+                },
+            },
+        };
+    </script>
+<style>
+        .certificate-bg {
+            background: linear-gradient(180deg, rgba(16, 26, 34, 0.8) 0%, rgba(16, 26, 34, 0.95) 100%), url('https://storage.googleapis.com/aida-images/b48a31e1-e1d5-4a1e-8e6f-4d92d477b81b.png');
+            background-size: cover;
+            background-position: center;
+        }
+    </style>
+<style>
+        body { min-height: max(884px, 100dvh); }
+    </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="flex flex-col h-screen">
+<header class="flex items-center justify-between p-4 bg-background-light dark:bg-background-dark border-b border-white/10">
+<button class="text-white" id="back-btn">
+<svg class="text-black dark:text-white" fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"></path></svg>
+</button>
+<h1 class="text-lg font-bold text-black dark:text-white absolute left-1/2 -translate-x-1/2" data-i18n-key="certificate_title">Shareable Certificate</h1>
+<select data-lang-selector class="ml-auto rounded-full bg-background-dark/10 dark:bg-background-light/10 text-black dark:text-white text-xs px-2 py-1 border border-black/10 dark:border-white/10"></select>
+</header>
+<main class="flex-grow flex flex-col justify-center items-center p-4">
+<div class="w-full max-w-sm aspect-[5/7] rounded-xl shadow-2xl p-6 flex flex-col certificate-bg text-white">
+<div class="flex justify-between items-start animate-pulse-slow">
+<div class="w-16 h-16 bg-contain bg-no-repeat bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAadcVfHHnfqKixJqOJTCoZO7rfFqejbJiNG4cJNnX-cy7weoRFAthPPvTWMjgbftr_2zMvVgm8YqkCMJqhDadtn8S1IrX2GqKUW61bYwprTvOcv_c3SjWVHavkl6W0KI2sUZbrrim5JLCt1WIY06kbjHj_JrjCs2lszHbqzNJ-UBcnqQC9OyqpPcbxvetAcmQT7sqtSpJRkNNliVV5SuX6PdbYfZWzV6xGK3q6eS0Cug51e-N5oavwgrFpomP_lJm70MrTvMMWBM26');"></div>
+<div class="w-16 h-16 bg-contain bg-no-repeat bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAadcVfHHnfqKixJqOJTCoZO7rfFqejbJiNG4cJNnX-cy7weoRFAthPPvTWMjgbftr_2zMvVgm8YqkCMJqhDadtn8S1IrX2GqKUW61bYwprTvOcv_c3SjWVHavkl6W0KI2sUZbrrim5JLCt1WIY06kbjHj_JrjCs2lszHbqzNJ-UBcnqQC9OyqpPcbxvetAcmQT7sqtSpJRkNNliVV5SuX6PdbYfZWzV6xGK3q6eS0Cug51e-N5oavwgrFpomP_lJm70MrTvMMWBM26');"></div>
+</div>
+<div class="flex-grow flex flex-col justify-center items-center text-center mt-4">
+<p class="text-sm tracking-widest uppercase animate-fade-in [animation-delay:0.2s]">Certificate of Civic Achievement</p>
+<p class="text-4xl font-bold mt-4 animate-fade-in [animation-delay:0.4s]">Kartik</p>
+<p class="mt-2 text-lg text-gray-300 animate-fade-in [animation-delay:0.6s]">is hereby recognized for outstanding contribution as an</p>
+<h2 class="text-3xl font-bold text-primary mt-4 animate-fade-in [animation-delay:0.8s]">Urban Guardian</h2>
+<p class="text-base text-gray-300 animate-fade-in [animation-delay:1s]">for the month of July</p>
+</div>
+<div class="flex justify-between items-end mt-auto pt-4 border-t border-white/20 animate-fade-in [animation-delay:1.2s]">
+<div class="text-left"><p class="text-xs font-bold text-gray-400 uppercase">Date Issued</p><p class="text-sm">July 26, 2024</p></div>
+<div class="text-right"><p class="text-xs font-bold text-gray-400 uppercase">Issuing Authority</p><p class="text-sm">CivicLens &amp; City of Chennai</p></div>
+</div>
+</div>
+<div class="w-full max-w-sm mt-6">
+<button id="share-cert" class="w-full h-12 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"><span class="material-symbols-outlined">share</span> <span data-i18n-key="share_certificate_button">Share Certificate</span></button>
+</div>
+</main>
+<footer class="sticky bottom-0 bg-background-light dark:bg-background-dark border-t border-gray-200 dark:border-gray-800">
+<nav class="flex justify-around items-center h-20 text-xs text-gray-500 dark:text-gray-400">
+<a class="flex flex-col items-center gap-1" href="#" data-link="home"><span class="material-symbols-outlined">home</span><span data-i18n-key="nav_home">Home</span></a>
+<a class="flex flex-col items-center gap-1" href="#" data-link="myreports"><span class="material-symbols-outlined">description</span><span data-i18n-key="nav_reports">My Reports</span></a>
+<a class="flex flex-col items-center gap-1" href="#" data-link="map"><span class="material-symbols-outlined">map</span><span data-i18n-key="nav_map">Map</span></a>
+<a class="flex flex-col items-center gap-1 text-primary" href="#" data-link="impact"><span class="material-symbols-outlined">insights</span><span data-i18n-key="nav_impact">My Impact</span></a>
+<a class="flex flex-col items-center gap-1" href="#" data-link="leaderboard"><span class="material-symbols-outlined">leaderboard</span><span data-i18n-key="nav_leaderboard">Leaderboard</span></a>
+</nav>
+</footer>
+</div>
+<script>
+  (function(){
+    // Back button
+    document.getElementById('back-btn')?.addEventListener('click', function(e){ e.preventDefault(); history.back(); });
+    // Bottom nav routing
+    document.querySelectorAll('[data-link]').forEach(link => {
+      link.addEventListener('click', function(e){
+        e.preventDefault();
+        const dest = this.getAttribute('data-link');
+        if (window.MapsTo) { window.MapsTo(dest); }
+        else {
+          const mapToFile = { home: 'homepage.html', myreports: 'myreports.html', map: 'map.html', impact: 'myimpact.html', leaderboard: 'Leaderboard.html' };
+          location.href = mapToFile[dest] || 'homepage.html';
+        }
+      });
+    });
+    // Share
+    document.getElementById('share-cert')?.addEventListener('click', async () => {
+      try {
+        if (navigator.share) {
+          await navigator.share({ title: 'CivicLens Certificate', text: 'Check out my CivicLens contribution!', url: location.href });
+        } else {
+          alert('Sharing not supported in this browser.');
+        }
+      } catch (_) {}
+    });
+  })();
+</script>
+<script src="./js/i18n.js"></script>
+<script>
+  (function(){ if (window.CivicI18n) window.CivicI18n.applyTranslations(); })();
+  </script>
+</body></html>
+

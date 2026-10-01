@@ -1,0 +1,15 @@
+services:
+  smart-waste-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: smart_waste_management
+    ports:
+      - "8000:8000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+    volumes:
+      - ./frontend/uploads:/app/frontend/uploads
+    restart: unless-stopped

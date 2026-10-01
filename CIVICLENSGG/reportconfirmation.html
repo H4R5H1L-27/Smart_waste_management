@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Success Confirmation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#0b7ada",
+            "background-light": "#f5f7f8",
+            "background-dark": "#101a22",
+          },
+          fontFamily: {
+            "display": ["Space Grotesk"]
+          },
+          borderRadius: {
+            "DEFAULT": "1rem",
+            "lg": "2rem",
+            "xl": "3rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+    </script>
+<style>
+        @keyframes scale-in {
+            0% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        @keyframes pulse-glow {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(11, 122, 218, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 20px 10px rgba(11, 122, 218, 0);
+            }
+        }
+        .animate-scale-in {
+            animation: scale-in 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+        .animate-pulse-glow {
+            animation: pulse-glow 2s infinite;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="flex flex-col h-screen justify-between">
+<div class="p-4 flex justify-end">
+<select data-lang-selector class="rounded-full bg-background-dark/10 dark:bg-background-light/10 text-slate-800 dark:text-white text-xs px-2 py-1 border border-black/10 dark:border-white/10">
+  <option value="en">English</option>
+  <option value="hi">हिन्दी</option>
+  <option value="ta">தமிழ்</option>
+  <option value="te">తెలుగు</option>
+  <option value="bn">বাংলা</option>
+  <option value="kn">ಕನ್ನಡ</option>
+  <option value="gu">ગુજરાતી</option>
+</select>
+</div>
+<main class="flex flex-col items-center justify-center text-center px-6 flex-grow">
+<div class="w-24 h-24 mb-6 flex items-center justify-center bg-primary/10 dark:bg-primary/20 rounded-full animate-pulse-glow">
+<div class="w-20 h-20 flex items-center justify-center bg-primary/20 dark:bg-primary/30 rounded-full">
+<span class="material-symbols-outlined text-primary animate-scale-in" style="font-size: 64px;">
+                        check_circle
+                    </span>
+</div>
+</div>
+<h1 class="text-3xl font-bold text-slate-800 dark:text-white" data-i18n-key="success_title">Report Submitted!</h1>
+<p class="mt-2 text-base text-slate-600 dark:text-slate-400" id="confirmation-id-text">Confirmation ID: #CL7890</p>
+</main>
+<footer class="p-4 space-y-3">
+<button class="w-full h-14 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-full text-lg shadow-lg flex items-center justify-center gap-2 transition" id="btn-view-map"><span class="material-symbols-outlined">map</span> View Pin on Live Map</button>
+<button class="w-full h-12 bg-primary text-white font-bold rounded-full text-base" data-i18n-key="view_my_reports_button">View My Reports</button>
+<button class="w-full h-12 bg-primary/20 dark:bg-primary/30 text-primary font-bold rounded-full text-base" data-i18n-key="report_another_issue_button">Report Another Issue</button>
+</footer>
+</div>
+<script>
+  (function(){
+    const urlParams = new URLSearchParams(window.location.search);
+    const repId = urlParams.get('id') || localStorage.getItem('lastSubmittedReportId') || '7890';
+    const confEl = document.getElementById('confirmation-id-text');
+    if (confEl) {
+      confEl.textContent = `Confirmation ID: #CL-${repId}`;
+    }
+
+    const mapBtn = document.getElementById('btn-view-map');
+    if (mapBtn) {
+      mapBtn.addEventListener('click', function(e){
+        e.preventDefault();
+        localStorage.setItem('focusReportId', String(repId));
+        localStorage.setItem('lastSubmittedReportId', String(repId));
+        location.href = 'map.html';
+      });
+    }
+
+    const toReports = document.querySelector('button[data-i18n-key="view_my_reports_button"]');
+    const another = document.querySelector('button[data-i18n-key="report_another_issue_button"]');
+    if (toReports) toReports.addEventListener('click', function(e){ e.preventDefault(); if (window.MapsTo) { window.MapsTo('myreports'); } else { location.href = 'myreports.html'; } });
+    if (another) another.addEventListener('click', function(e){ e.preventDefault(); if (window.MapsTo) { window.MapsTo('home'); } else { location.href = 'homepage.html'; } });
+  })();
+</script>
+<script src="./js/i18n.js"></script>
+<script>
+  (function(){ if (window.CivicI18n) window.CivicI18n.applyTranslations(); })();
+  </script>
+
+</body></html>
+

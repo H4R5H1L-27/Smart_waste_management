@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title data-i18n-key="tutorial_title">CivicLens Quick Tutorial</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#0b7ada",
+                        "background-light": "#f5f7f8",
+                        "background-dark": "#101a22",
+                        "card-dark": "#1a252f",
+                    },
+                    fontFamily: {
+                        display: ["Space Grotesk"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.25rem",
+                        lg: "0.5rem",
+                        xl: "0.75rem",
+                        "2xl": "1rem",
+                        full: "9999px"
+                    },
+                },
+            },
+        };
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24;
+        }
+        body {
+            min-height: max(884px, 100dvh);
+        }
+        .scroll-container {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .scroll-container::-webkit-scrollbar {
+            display: none;
+        }
+        .scroll-snap-x {
+            scroll-snap-type: x mandatory;
+        }
+        .scroll-snap-start {
+            scroll-snap-align: start;
+        }
+    </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-200">
+<div class="flex flex-col min-h-[100dvh]">
+<header class="py-6 px-6">
+<h1 class="text-xl font-bold text-center text-slate-900 dark:text-white tracking-wider">CivicLens</h1>
+<select data-lang-selector class="fixed right-4 top-4 z-50 rounded-full bg-background-dark/10 dark:bg-background-light/10 text-slate-800 dark:text-white text-xs px-2 py-1 border border-black/10 dark:border-white/10">
+  <option value="en">English</option>
+  <option value="hi">हिन्दी</option>
+  <option value="ta">தமிழ்</option>
+  <option value="te">తెలుగు</option>
+  <option value="bn">বাংলা</option>
+  <option value="kn">ಕನ್ನಡ</option>
+  <option value="gu">ગુજરાતી</option>
+</select>
+</header>
+<main class="flex-grow flex flex-col justify-center px-0 pb-4">
+<div class="text-center mb-10 px-6">
+<h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-3" data-i18n-key="tutorial_heading">Your City, Your Impact</h2>
+<p class="text-slate-600 dark:text-slate-400 max-w-xs mx-auto" data-i18n-key="tutorial_subheading">A quick guide to making a difference with just a few taps.</p>
+</div>
+<div class="relative w-full overflow-hidden">
+<div class="flex overflow-x-auto snap-x snap-mandatory scroll-container pb-6 -mb-6" id="tutorial-carousel">
+<div class="flex-none w-full snap-start px-6" id="step-1">
+<div class="bg-card-dark rounded-2xl p-6 flex flex-col items-center text-center shadow-2xl shadow-primary/10">
+<div class="bg-primary/10 p-4 rounded-full mb-4">
+<span class="material-symbols-outlined text-primary text-4xl">search</span>
+</div>
+<h3 class="text-xl font-bold text-white mb-1" data-i18n-key="tutorial_step1_title">Discover</h3>
+<p class="text-slate-400 text-sm" data-i18n-key="tutorial_step1_desc">Spot an issue? Just scan it.</p>
+</div>
+</div>
+<div class="flex-none w-full snap-start px-6" id="step-2">
+<div class="bg-card-dark rounded-2xl p-6 flex flex-col items-center text-center shadow-2xl shadow-primary/10">
+<div class="bg-primary/10 p-4 rounded-full mb-4">
+<span class="material-symbols-outlined text-primary text-4xl">qr_code_scanner</span>
+</div>
+<h3 class="text-xl font-bold text-white mb-1" data-i18n-key="tutorial_step2_title">Scan</h3>
+<p class="text-slate-400 text-sm" data-i18n-key="tutorial_step2_desc">Our AI helps analyze and categorize the issue.</p>
+</div>
+</div>
+<div class="flex-none w-full snap-start px-6" id="step-3">
+<div class="bg-card-dark rounded-2xl p-6 flex flex-col items-center text-center shadow-2xl shadow-primary/10">
+<div class="bg-primary/10 p-4 rounded-full mb-4">
+<span class="material-symbols-outlined text-primary text-4xl">send</span>
+</div>
+<h3 class="text-xl font-bold text-white mb-1" data-i18n-key="tutorial_step3_title">Report</h3>
+<p class="text-slate-400 text-sm" data-i18n-key="tutorial_step3_desc">Submit your report and track its progress.</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<footer class="px-6 pb-8 pt-4">
+<div class="flex justify-center gap-2 mb-8" id="carousel-dots">
+<div class="dot active w-3 h-3 rounded-full bg-primary"></div>
+<div class="dot w-3 h-3 rounded-full bg-primary/40"></div>
+<div class="dot w-3 h-3 rounded-full bg-primary/40"></div>
+</div>
+<button class="w-full bg-primary text-white font-bold py-4 px-5 rounded-xl h-14 text-lg" id="tutorial-cta" data-i18n-key="tutorial_cta">Start Exploring</button>
+</footer>
+</div>
+<script>
+        const carousel = document.getElementById('tutorial-carousel');
+        const dots = document.querySelectorAll('#carousel-dots .dot');
+        const cards = document.querySelectorAll('#tutorial-carousel > div');
+        const updateDots = () => {
+            const scrollLeft = carousel.scrollLeft;
+            const cardWidth = carousel.querySelector('div').offsetWidth;
+            const activeIndex = Math.round(scrollLeft / cardWidth);
+            dots.forEach((dot, index) => {
+                if (index === activeIndex) {
+                    dot.classList.add('bg-primary');
+                    dot.classList.remove('bg-primary/40');
+                } else {
+                    dot.classList.remove('bg-primary');
+                    dot.classList.add('bg-primary/40');
+                }
+            });
+            cards.forEach((card, index) => {
+                 if (index === activeIndex) {
+                    card.classList.add('opacity-100', 'scale-100');
+                    card.classList.remove('opacity-60', 'scale-95');
+                } else {
+                    card.classList.remove('opacity-100', 'scale-100');
+                    card.classList.add('opacity-60', 'scale-95');
+                }
+            });
+        };
+        if (carousel) carousel.addEventListener('scroll', updateDots);
+        updateDots();
+</script>
+<script>
+        (function(){
+          const cta = document.getElementById('tutorial-cta');
+          if (!cta) return;
+          cta.addEventListener('click', function(e){
+            e.preventDefault();
+            if (window.MapsTo) { window.MapsTo('home'); }
+            else { location.href = 'homepage.html'; }
+          });
+        })();
+</script>
+<script src="./js/i18n.js"></script>
+<script>
+  (function(){ if (window.CivicI18n) window.CivicI18n.applyTranslations(); })();
+  </script>
+
+</body></html>
+

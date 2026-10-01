@@ -1,0 +1,38 @@
+# Python virtual environments & bytecode
+backend/venv/
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Local databases & testing
+backend/waste.db
+backend/*.db
+backend/tests/_test.db
+backend/tests/*.db
+
+# Uploaded media (preserve directory structure via .gitkeep)
+frontend/uploads/*
+!frontend/uploads/.gitkeep
+
+# Machine Learning generated models & datasets
+ml/dataset/*
+!ml/dataset/README.md
+ml/saved_model/*
+!ml/saved_model/.gitkeep
+
+# OS / Editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Secrets & environment configurations
+.env
+.env.local
+!.env.example
+

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CivicLens - Permissions</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#0b7ada",
+              "background-light": "#f5f7f8",
+              "background-dark": "#101a22",
+            },
+            fontFamily: {
+              display: ["Space Grotesk"],
+            },
+            borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+            animation: {
+              'slide-in-1': 'slideIn 1s ease-out forwards',
+              'slide-in-2': 'slideIn 1s ease-out 0.2s forwards',
+              'bounce-in': 'bounceIn 1s ease-out 0.5s forwards',
+              'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              'flash': 'flash 2s ease-in-out infinite alternate',
+            },
+            keyframes: {
+              slideIn: {
+                '0%': { transform: 'translateY(20px)', opacity: '0' },
+                '100%': { transform: 'translateY(0)', opacity: '1' },
+              },
+              bounceIn: {
+                 '0%': { opacity: '0', transform: 'scale(0.3) translateY(20px)' },
+                 '50%': { transform: 'scale(1.05) translateY(0)' },
+                 '70%': { transform: 'scale(0.9)' },
+                 '100%': { opacity: '1', transform: 'scale(1)' },
+              },
+              pulse: {
+                '50%': {
+                  boxShadow: '0 0 0 8px rgba(11, 122, 218, 0.4)',
+                }
+              },
+              flash: {
+                '0%, 100%': {
+                   opacity: '1',
+                },
+                '50%': {
+                    opacity: '0.6',
+                },
+              }
+            }
+          },
+        },
+      };
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings:
+        'FILL' 1,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="flex flex-col min-h-screen">
+<header class="relative py-6 text-center">
+<h1 class="text-2xl font-bold text-background-dark dark:text-background-light">CivicLens</h1>
+<select data-lang-selector class="absolute right-4 top-6 rounded-full bg-background-dark/10 dark:bg-background-light/10 text-background-dark dark:text-background-light text-sm px-3 py-1 border border-black/10 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-primary">
+  <option value="en">English</option>
+  <option value="hi">हिन्दी</option>
+  <option value="ta">தமிழ்</option>
+  <option value="te">తెలుగు</option>
+  <option value="bn">বাংলা</option>
+  <option value="kn">ಕನ್ನಡ</option>
+  <option value="gu">ગુજરાતી</option>
+  </select>
+</header>
+<main class="flex-grow flex flex-col items-center justify-center px-4 space-y-4">
+<div class="text-center space-y-2 mb-8">
+<h2 class="text-3xl font-bold text-background-dark dark:text-background-light" data-i18n-key="permissions_title">Unlock Civic Power</h2>
+<p class="text-background-dark/70 dark:text-background-light/70 max-w-sm mx-auto" data-i18n-key="permissions_tagline">To help you make the biggest impact, CivicLens needs a few permissions.</p>
+</div>
+<div class="w-full max-w-md space-y-5">
+<div class="bg-background-light/50 dark:bg-background-dark/50 p-6 rounded-xl flex items-center space-x-5 opacity-0 animate-slide-in-1">
+<div class="relative">
+<span class="material-symbols-outlined text-primary text-4xl animate-pulse">location_pin</span>
+</div>
+<div class="flex-1">
+<h3 class="text-lg font-bold text-background-dark dark:text-background-light" data-i18n-key="permissions_location_title">Pinpoint Issues</h3>
+<p class="text-sm text-background-dark/70 dark:text-background-light/70" data-i18n-key="permissions_location_desc">Automatically geotag reports for precise city action.</p>
+</div>
+</div>
+<div class="bg-background-light/50 dark:bg-background-dark/50 p-6 rounded-xl flex items-center space-x-5 opacity-0 animate-slide-in-2">
+<div class="relative">
+<span class="material-symbols-outlined text-primary text-4xl animate-flash">photo_camera</span>
+</div>
+<div class="flex-1">
+<h3 class="text-lg font-bold text-background-dark dark:text-background-light" data-i18n-key="permissions_camera_title">Capture Evidence</h3>
+<p class="text-sm text-background-dark/70 dark:text-background-light/70" data-i18n-key="permissions_camera_desc">Take photos and videos to show issues clearly.</p>
+</div>
+</div>
+</div>
+</main>
+<footer class="p-4 opacity-0 animate-bounce-in">
+<button class="w-full bg-primary text-white font-bold h-14 rounded-full text-lg shadow-lg shadow-primary/20" data-i18n-key="grant_permissions_button">Grant Permissions</button>
+<div class="h-8"></div>
+</footer>
+</div>
+<script>
+  (function() {
+    const grantBtn = document.querySelector('footer button');
+    if (!grantBtn) return;
+
+    async function requestLocationPermission() {
+      if (!('geolocation' in navigator)) return false;
+      return new Promise((resolve) => {
+        try {
+          navigator.geolocation.getCurrentPosition(
+            () => resolve(true),
+            () => resolve(false),
+            { enableHighAccuracy: true, timeout: 7000, maximumAge: 0 }
+          );
+        } catch (_) { resolve(false); }
+      });
+    }
+
+    async function requestCameraPermission() {
+      const media = navigator.mediaDevices && navigator.mediaDevices.getUserMedia;
+      if (!media) return false;
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        try { stream.getTracks().forEach(t => t.stop()); } catch (_) {}
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+
+    async function handleGrant() {
+      try {
+        await Promise.race([
+          requestLocationPermission(),
+          new Promise(r => setTimeout(() => r(false), 8000))
+        ]);
+        await Promise.race([
+          requestCameraPermission(),
+          new Promise(r => setTimeout(() => r(false), 8000))
+        ]);
+      } finally {
+        if (window.MapsTo) {
+          window.MapsTo('tutorial');
+        } else {
+          location.href = 'tutorial.html';
+        }
+      }
+    }
+
+    grantBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      handleGrant();
+    });
+  })();
+  </script>
+<script src="./js/i18n.js"></script>
+<script>
+  (function(){
+    const sel = document.getElementById('language-selector');
+    if (sel) sel.addEventListener('change', function(){ if (window.CivicI18n) window.CivicI18n.setLanguage(this.value); });
+    if (window.CivicI18n) window.CivicI18n.applyTranslations();
+  })();
+</script>
+
+</body></html>
+

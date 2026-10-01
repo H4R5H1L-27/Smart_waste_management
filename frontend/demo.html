@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chennai Smart Waste Management · Demo Presentation Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: '#2563eb',
+            darkBg: '#090d16',
+            cardBg: '#111827',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col selection:bg-blue-600 selection:text-white">
+
+  <!-- Top Announcement / Telemetry Bar -->
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-500 flex items-center justify-center text-white shadow-lg shadow-blue-500/25">
+          <i data-lucide="recycle" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-lg text-white leading-tight flex items-center gap-2">
+            Chennai Smart Waste Management
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">Demo Hub</span>
+          </h1>
+          <p class="text-xs text-slate-400">VIT Chennai Campus &amp; Greater Chennai Corporation Grid</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button id="btn-reset-demo" onclick="resetDemoScenario()" class="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center gap-1.5 transition shadow-sm cursor-pointer">
+          <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+          Reset Demo Scenario
+        </button>
+        <span id="backend-health" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          Backend API Live
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Header -->
+  <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-10">
+    
+    <div class="text-center max-w-3xl mx-auto space-y-3">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700">
+        <i data-lucide="compass" class="w-3.5 h-3.5 text-cyan-400"></i>
+        Presentation Navigator &amp; Flow Orchestration
+      </div>
+      <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
+        Three Independent, Connected Flows
+      </h2>
+      <p class="text-slate-400 text-sm sm:text-base leading-relaxed">
+        Demonstrating live hardware IoT bin telemetry, multilingual citizen grievance reporting, and municipal operations route dispatch with Google OR-Tools and explainable AI.
+      </p>
+    </div>
+
+    <!-- 3 Core Demo Flow Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+      <!-- FLOW 1 -->
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-6 flex flex-col justify-between hover:border-slate-700 transition relative overflow-hidden group">
+        <div class="absolute -top-12 -right-12 w-28 h-28 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition"></div>
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono font-bold tracking-wider uppercase text-blue-400 px-2.5 py-1 rounded-md bg-blue-500/10 border border-blue-500/20">Flow 1</span>
+            <span class="text-xs text-slate-400 flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span> 1 Real + 15 Sim Bins
+            </span>
+          </div>
+          <div>
+            <h3 class="text-xl font-bold text-white flex items-center gap-2">
+              <i data-lucide="radio" class="w-5 h-5 text-blue-400"></i>
+              Smart-Bin Monitoring
+            </h3>
+            <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+              Real-time ultrasonic fill telemetry and edge camera waste categorization. Focuses on <strong>Node real-1 (gymd)</strong> with ultrasonic HC-SR04 readings, camera confidence, and clearly labeled simulated fleet bins.
+            </p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-1.5 text-xs">
+            <div class="flex justify-between text-slate-300">
+              <span>Live Bin (gymd):</span>
+              <span class="font-mono text-cyan-400" id="flow1-live-fill">24.0% (Online)</span>
+            </div>
+            <div class="flex justify-between text-slate-400">
+              <span>Camera Classifier:</span>
+              <span class="font-mono text-emerald-400">PLASTIC (94%)</span>
+            </div>
+            <div class="flex justify-between text-slate-400">
+              <span>Simulated Fleet:</span>
+              <span>15 campus nodes</span>
+            </div>
+          </div>
+        </div>
+        <div class="pt-6 space-y-2">
+          <a href="/#/bins" class="w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs flex items-center justify-center gap-2 transition shadow-lg shadow-blue-600/20">
+            <span>Launch Smart-Bin Flow</span>
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- FLOW 2 -->
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-6 flex flex-col justify-between hover:border-slate-700 transition relative overflow-hidden group">
+        <div class="absolute -top-12 -right-12 w-28 h-28 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition"></div>
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono font-bold tracking-wider uppercase text-emerald-400 px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20">Flow 2</span>
+            <span class="text-xs text-slate-400 flex items-center gap-1">
+              <i data-lucide="languages" class="w-3.5 h-3.5"></i> 7 Languages
+            </span>
+          </div>
+          <div>
+            <h3 class="text-xl font-bold text-white flex items-center gap-2">
+              <i data-lucide="camera" class="w-5 h-5 text-emerald-400"></i>
+              Citizen Reporting Portal
+            </h3>
+            <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+              CivicLens resident application with multilingual i18n (Tamil, Hindi, English). Residents capture waste pileups with instant severity assessment and submit GPS reports with audit references.
+            </p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-1.5 text-xs">
+            <div class="flex justify-between text-slate-300">
+              <span>Current Reports:</span>
+              <span class="font-mono text-emerald-400" id="flow2-report-count">3 Active</span>
+            </div>
+            <div class="flex justify-between text-slate-400">
+              <span>Status Lifecycle:</span>
+              <span>Submitted &rarr; Verified &rarr; Resolved</span>
+            </div>
+            <div class="flex justify-between text-slate-400">
+              <span>Gamification:</span>
+              <span>Badges, Leaderboard, Impact</span>
+            </div>
+          </div>
+        </div>
+        <div class="pt-6 space-y-2">
+          <a href="/civiclens/homepage.html" target="_blank" class="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs flex items-center justify-center gap-2 transition shadow-lg shadow-emerald-600/20">
+            <span>Launch CivicLens Portal</span>
+            <i data-lucide="external-link" class="w-4 h-4"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- FLOW 3 -->
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-6 flex flex-col justify-between hover:border-slate-700 transition relative overflow-hidden group">
+        <div class="absolute -top-12 -right-12 w-28 h-28 bg-purple-500/10 rounded-full blur-2xl group-hover:bg-purple-500/20 transition"></div>
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono font-bold tracking-wider uppercase text-purple-400 px-2.5 py-1 rounded-md bg-purple-500/10 border border-purple-500/20">Flow 3</span>
+            <span class="text-xs text-slate-400 flex items-center gap-1">
+              <i data-lucide="route" class="w-3.5 h-3.5"></i> Google OR-Tools
+            </span>
+          </div>
+          <div>
+            <h3 class="text-xl font-bold text-white flex items-center gap-2">
+              <i data-lucide="shield" class="w-5 h-5 text-purple-400"></i>
+              Government Operations &amp; Routing
+            </h3>
+            <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+              Official verification console. Officials review citizen report photos and Verify (creates task) or Reject (prevents task). OR-Tools optimizes road logistics with explainable AI sequencing suggestions.
+            </p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-1.5 text-xs">
+            <div class="flex justify-between text-slate-300">
+              <span>Collection Tasks:</span>
+              <span class="font-mono text-purple-400" id="flow3-task-count">3 Open</span>
+            </div>
+            <div class="flex justify-between text-slate-400">
+              <span>Routing Engine:</span>
+              <span>OpenStreetMap OSRM + VRP</span>
+            </div>
+            <div class="flex justify-between text-slate-400">
+              <span>AI Advisor:</span>
+              <span>Chennai climate &amp; odor prioritization</span>
+            </div>
+          </div>
+        </div>
+        <div class="pt-6 space-y-2">
+          <a href="/#/overview" class="w-full py-2.5 px-4 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs flex items-center justify-center gap-2 transition shadow-lg shadow-purple-600/20">
+            <span>Launch Operations Console</span>
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </a>
+          <a href="/#/optimizer" class="w-full py-2 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium text-xs flex items-center justify-center gap-1.5 transition">
+            <span>Open Route Optimizer</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Presentation Walkthrough Guide -->
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/40 p-6 sm:p-8 space-y-6">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div>
+          <h3 class="text-xl font-bold text-white flex items-center gap-2">
+            <i data-lucide="play-circle" class="w-5 h-5 text-cyan-400"></i>
+            Live Presentation Script &amp; Validation Checklist
+          </h3>
+          <p class="text-xs text-slate-400 mt-1">Directly maps to the exploration &amp; implementation guide milestones</p>
+        </div>
+        <span class="text-xs px-3 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700">5 Step Demo Sequence</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-4 text-xs">
+        
+        <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800/80 space-y-2">
+          <div class="font-mono font-bold text-cyan-400 text-sm">STEP 1</div>
+          <div class="font-bold text-white">Smart-Bin Monitoring</div>
+          <p class="text-slate-400 leading-relaxed">
+            Open Flow 1. Show the live ESP32 hardware bin reading (24%) with active ultrasonic ping and camera detection vs simulated campus bins.
+          </p>
+          <a href="/#/bins" class="text-blue-400 hover:underline block pt-1 font-semibold">Open Live Bins &rarr;</a>
+        </div>
+
+        <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800/80 space-y-2">
+          <div class="font-mono font-bold text-cyan-400 text-sm">STEP 2</div>
+          <div class="font-bold text-white">Citizen Report</div>
+          <p class="text-slate-400 leading-relaxed">
+            Open CivicLens in Tamil or English. Submit a plastic waste pileup report near Academic Block 1. Observe confirmation ID (#CL-...).
+          </p>
+          <a href="/civiclens/index.html" target="_blank" class="text-emerald-400 hover:underline block pt-1 font-semibold">Open CivicLens &rarr;</a>
+        </div>
+
+        <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800/80 space-y-2">
+          <div class="font-mono font-bold text-cyan-400 text-sm">STEP 3</div>
+          <div class="font-bold text-white">Official Verification</div>
+          <p class="text-slate-400 leading-relaxed">
+            Open Operations. Review the pending report evidence. Click <strong>Verify</strong> (creates task). Point to rejected leaf clutter (no task).
+          </p>
+          <a href="/#/overview" class="text-purple-400 hover:underline block pt-1 font-semibold">Open Operations &rarr;</a>
+        </div>
+
+        <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800/80 space-y-2">
+          <div class="font-mono font-bold text-cyan-400 text-sm">STEP 4</div>
+          <div class="font-bold text-white">Route Optimization</div>
+          <p class="text-slate-400 leading-relaxed">
+            Open Route Optimizer. View stops with inclusion reasons. Review and <strong>Accept AI Suggestion</strong>. Watch truck simulator.
+          </p>
+          <a href="/#/optimizer" class="text-blue-400 hover:underline block pt-1 font-semibold">Open Route View &rarr;</a>
+        </div>
+
+        <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800/80 space-y-2">
+          <div class="font-mono font-bold text-cyan-400 text-sm">STEP 5</div>
+          <div class="font-bold text-white">Task Completion</div>
+          <p class="text-slate-400 leading-relaxed">
+            Click <strong>Mark Collected</strong> on the verified stop. Check that the linked citizen report becomes RESOLVED and bin fill resets!
+          </p>
+          <button onclick="resetDemoScenario()" class="text-cyan-400 hover:underline block pt-1 font-semibold cursor-pointer text-left">Reset for next run &rarr;</button>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="border-t border-slate-900 bg-slate-950 py-6 text-center text-xs text-slate-500">
+    Chennai Smart Waste Logistics Platform &middot; Built with FastAPI, SQLite, Leaflet, MobileNetV2 &amp; Google OR-Tools
+  </footer>
+
+  <script>
+    async function updateDashboardStats() {
+      try {
+        const [binsRes, reportsRes, tasksRes] = await Promise.all([
+          fetch('/bins'),
+          fetch('/reports'),
+          fetch('/tasks?status=open')
+        ]);
+        if (binsRes.ok) {
+          const bins = await binsRes.json();
+          const real = bins.find(b => b.is_real);
+          if (real) {
+            document.getElementById('flow1-live-fill').textContent = `${real.fill_percent}% (${real.device_status.toUpperCase()})`;
+          }
+        }
+        if (reportsRes.ok) {
+          const reps = await reportsRes.json();
+          document.getElementById('flow2-report-count').textContent = `${reps.length} Total (${reps.filter(r => r.status === 'submitted').length} Pending)`;
+        }
+        if (tasksRes.ok) {
+          const tasks = await tasksRes.json();
+          document.getElementById('flow3-task-count').textContent = `${tasks.length} Open Stops`;
+        }
+      } catch (e) {
+        console.warn('Stats fetch paused', e);
+      }
+    }
+
+    async function resetDemoScenario() {
+      const btn = document.getElementById('btn-reset-demo');
+      btn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i> Resetting...`;
+      try {
+        const res = await fetch('/demo/reset', { method: 'POST' });
+        if (res.ok) {
+          btn.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Scenario Ready!`;
+          setTimeout(() => {
+            btn.innerHTML = `<i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset Demo Scenario`;
+            lucide.createIcons();
+          }, 2000);
+          updateDashboardStats();
+        }
+      } catch (err) {
+        alert('Reset failed: ' + err.message);
+      }
+      lucide.createIcons();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      updateDashboardStats();
+      setInterval(updateDashboardStats, 5000);
+    });
+  </script>
+</body>
+</html>

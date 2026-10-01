@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Report Details</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0b7ada",
+                        "background-light": "#f5f7f8",
+                        "background-dark": "#101a22",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings:
+                'FILL' 0,
+                'wght' 400,
+                'GRAD' 0,
+                'opsz' 24
+        }
+    </style>
+<style>
+    body { min-height: max(884px, 100dvh); }
+    </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-800 dark:text-gray-200">
+<div class="max-w-md mx-auto min-h-screen flex flex-col">
+<header class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800 relative">
+<button class="p-2" id="back-btn">
+<span class="material-symbols-outlined text-gray-900 dark:text-white">arrow_back</span>
+</button>
+<h1 class="text-lg font-bold text-gray-900 dark:text-white flex-1 text-center" data-i18n-key="report_details_title">Report Details</h1>
+<select data-lang-selector class="absolute right-4 top-4 rounded-full bg-background-dark/10 dark:bg-background-light/10 text-gray-900 dark:text-white text-xs px-2 py-1 border border-black/10 dark:border-white/10">
+  <option value="en">English</option>
+  <option value="hi">हिन्दी</option>
+  <option value="ta">தமிழ்</option>
+  <option value="te">తెలుగు</option>
+  <option value="bn">বাংলা</option>
+  <option value="kn">ಕನ್ನಡ</option>
+  <option value="gu">ગુજરાતી</option>
+</select>
+<div class="w-10"></div>
+</header>
+<main class="flex-grow overflow-y-auto">
+<div class="p-4 space-y-4">
+  <div>
+    <div class="flex items-center gap-2 mb-1.5 flex-wrap" id="rd-badges">
+      <span class="px-2.5 py-0.5 rounded-full text-xs font-bold tracking-wide bg-primary/20 text-primary border border-primary/40" id="rd-category-pill">WASTE REPORT</span>
+      <span class="px-2.5 py-0.5 rounded-full text-xs font-bold tracking-wide bg-amber-500/20 text-amber-400 border border-amber-500/30" id="rd-sev-badge">SEVERITY: MEDIUM</span>
+      <span class="px-2.5 py-0.5 rounded-full text-xs font-bold tracking-wide bg-slate-700 text-slate-200" id="rd-status-badge">PENDING REVIEW</span>
+    </div>
+    <h2 class="text-2xl font-bold text-gray-900 dark:text-white" id="rd-title">Waste Report Details</h2>
+    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5" id="rd-timestamp">Fetching report details...</p>
+  </div>
+
+  <div class="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 shadow-sm bg-black/20">
+    <img alt="Uploaded photo" id="rd-photo" class="w-full h-52 object-cover" src="/samples/plastic.jpg" onerror="this.onerror=null; this.src='/samples/plastic.jpg';"/>
+  </div>
+
+  <!-- Gemini AI Facilities Directive & Recommended Steps -->
+  <div id="gemini-directive-card" class="rounded-xl bg-slate-900 border border-slate-700/80 p-4 shadow-lg">
+    <div class="flex items-center gap-2 mb-3 text-primary font-bold text-sm">
+      <span class="material-symbols-outlined text-base">psychology</span>
+      <span>Gemini AI Facilities Directive & Steps</span>
+    </div>
+    <div class="p-3 rounded-lg bg-slate-800/90 border border-slate-700/60 mb-3">
+      <p class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider mb-1">Recommended Action:</p>
+      <p class="text-sm font-medium text-slate-200" id="rd-rec-action">Loading recommended action...</p>
+    </div>
+    <div>
+      <p class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider mb-2">Sanitation Crew Operational Checklist:</p>
+      <ol class="space-y-2" id="rd-rec-steps">
+        <li class="flex items-start gap-2.5 text-xs text-slate-300">
+          <span class="flex items-center justify-center size-5 rounded-full bg-primary/20 text-primary font-bold text-[11px] shrink-0 mt-0.5">1</span>
+          <span class="leading-relaxed">Awaiting automated operational checklist...</span>
+        </li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="rounded-xl overflow-hidden h-40 border border-gray-200 dark:border-gray-800 shadow-sm" id="map-wrapper">
+    <iframe id="rd-map" class="w-full h-full" style="border:0" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+  </div>
+
+  <button id="btn-view-map-detail" class="w-full py-2.5 px-4 rounded-xl font-bold text-sm bg-emerald-600 hover:bg-emerald-700 text-white shadow flex items-center justify-center gap-2 transition">
+    <span class="material-symbols-outlined text-base">map</span> View Pin on Live Campus Map
+  </button>
+
+  <div class="space-y-6 pt-2" id="rd-timeline">
+    <div class="relative flex gap-x-4">
+      <div class="absolute left-5 top-5 -bottom-5 w-0.5 bg-gray-300 dark:bg-gray-700"></div>
+      <div class="flex flex-col items-center z-10">
+        <div class="flex items-center justify-center size-10 rounded-full bg-primary/20 dark:bg-primary/30">
+          <span class="material-symbols-outlined text-primary">task_alt</span>
+        </div>
+      </div>
+      <div class="flex-1 pb-6">
+        <p class="font-semibold text-gray-900 dark:text-white">Report Submitted</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400" id="rd-submitted-time">Just now</p>
+      </div>
+    </div>
+    <div class="relative flex gap-x-4">
+      <div class="flex flex-col items-center z-10">
+        <div class="flex items-center justify-center size-10 rounded-full bg-primary/20 dark:bg-primary/30">
+          <span class="material-symbols-outlined text-primary">pin_drop</span>
+        </div>
+      </div>
+      <div class="flex-1">
+        <p class="font-semibold text-gray-900 dark:text-white">Location</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400" id="rd-address">Fetching location…</p>
+      </div>
+    </div>
+  </div>
+</div>
+</main>
+<nav class="sticky bottom-0 bg-background-light dark:bg-background-dark border-t border-gray-200 dark:border-gray-800">
+<div class="flex justify-around p-2">
+<a class="flex flex-col items-center gap-1 p-2 text-gray-500 dark:text-gray-400" href="#" data-link="home">
+<span class="material-symbols-outlined">home</span>
+<span class="text-xs" data-i18n-key="nav_home">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 p-2 text-primary dark:text-primary" href="#" data-link="myreports">
+<span class="material-symbols-outlined">description</span>
+<span class="text-xs" data-i18n-key="nav_reports">My Reports</span>
+</a>
+<a class="flex flex-col items-center gap-1 p-2 text-gray-500 dark:text-gray-400" href="#" data-link="map">
+<span class="material-symbols-outlined">map</span>
+<span class="text-xs" data-i18n-key="nav_map">Map</span>
+</a>
+<a class="flex flex-col items-center gap-1 p-2 text-gray-500 dark:text-gray-400" href="#" data-link="impact">
+<span class="material-symbols-outlined">insights</span>
+<span class="text-xs" data-i18n-key="nav_impact">My Impact</span>
+</a>
+<a class="flex flex-col items-center gap-1 p-2 text-gray-500 dark:text-gray-400" href="#" data-link="leaderboard">
+<span class="material-symbols-outlined">leaderboard</span>
+<span class="text-xs" data-i18n-key="nav_leaderboard">Leaderboard</span>
+</a>
+</div>
+</nav>
+</div>
+<script>
+  (function(){
+    document.getElementById('back-btn')?.addEventListener('click', function(e){ 
+      e.preventDefault(); 
+      if (window.MapsTo) { 
+        window.MapsTo('myreports'); 
+      } else { 
+        location.href = 'myreports.html'; 
+      } 
+    });
+
+    const addrEl = document.getElementById('rd-address');
+    const mapEl = document.getElementById('rd-map');
+
+    function setMap(lat, lon){
+      const src = `https://www.openstreetmap.org/export/embed.html?bbox=${lon-0.01}%2C${lat-0.01}%2C${lon+0.01}%2C${lat+0.01}&layer=mapnik&marker=${lat}%2C${lon}`;
+      if (mapEl) mapEl.src = src;
+    }
+
+    function setAddress(text){ if (addrEl) addrEl.textContent = text; }
+
+    window.focusReportOnMap = function(reportId) {
+      localStorage.setItem('focusReportId', String(reportId));
+      localStorage.setItem('lastSubmittedReportId', String(reportId));
+      location.href = 'map.html';
+    };
+
+    document.querySelectorAll('[data-link]').forEach(link => {
+      link.addEventListener('click', function(e){
+        e.preventDefault();
+        const dest = this.getAttribute('data-link');
+        const mapToFile = { home: 'homepage.html', myreports: 'myreports.html', map: 'map.html', impact: 'myimpact.html', leaderboard: 'Leaderboard.html' };
+        location.href = mapToFile[dest] || 'homepage.html';
+      });
+    });
+
+    async function loadReportFromBackend() {
+      const urlParams = new URLSearchParams(window.location.search);
+      let repId = urlParams.get('id') || localStorage.getItem('lastSubmittedReportId');
+
+      if (!repId) {
+        try {
+          const listRes = await fetch('/reports');
+          if (listRes.ok) {
+            const list = await listRes.json();
+            if (list && list.length > 0) repId = list[0].id;
+          }
+        } catch(e){}
+      }
+
+      if (!repId) return;
+
+      try {
+        const res = await fetch(`/reports/${repId}`);
+        if (!res.ok) return;
+        const rep = await res.json();
+
+        // Title and Category
+        const titleEl = document.getElementById('rd-title');
+        if (titleEl) titleEl.textContent = `${(rep.category || 'Waste').toUpperCase()} Waste Issue (#CL-${rep.id})`;
+
+        const catPill = document.getElementById('rd-category-pill');
+        if (catPill) catPill.textContent = (rep.category || 'WASTE').toUpperCase();
+
+        const tsEl = document.getElementById('rd-timestamp');
+        const submittedTimeEl = document.getElementById('rd-submitted-time');
+        const formattedDate = (rep.timestamp || '').replace('T', ' ').slice(0, 19);
+        if (tsEl) tsEl.textContent = `Reported on ${formattedDate} UTC`;
+        if (submittedTimeEl) submittedTimeEl.textContent = formattedDate;
+
+        // Photo with fallback
+        const photoEl = document.getElementById('rd-photo');
+        if (photoEl) {
+          const sampleFallback = `/samples/${(rep.category || 'plastic').toLowerCase()}.jpg`;
+          const savedLocal = localStorage.getItem('lastCapturedImage');
+          photoEl.src = rep.image_url || savedLocal || sampleFallback;
+          photoEl.onerror = function() { this.onerror = null; this.src = '/samples/plastic.jpg'; };
+        }
+
+        // Severity Badge
+        const sev = (rep.severity || 'medium').toUpperCase();
+        const sevBadge = document.getElementById('rd-sev-badge');
+        if (sevBadge) {
+          sevBadge.textContent = `${sev} SEVERITY`;
+          if (sev === 'HIGH') {
+            sevBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold tracking-wide bg-red-500/20 text-red-400 border border-red-500/40';
+          } else if (sev === 'LOW') {
+            sevBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold tracking-wide bg-emerald-500/20 text-emerald-400 border border-emerald-500/40';
+          } else {
+            sevBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold tracking-wide bg-amber-500/20 text-amber-400 border border-amber-500/40';
+          }
+        }
+
+        // Status Badge
+        const st = (rep.status || 'submitted').toLowerCase();
+        const stBadge = document.getElementById('rd-status-badge');
+        if (stBadge) {
+          if (st === 'resolved') {
+            stBadge.textContent = 'RESOLVED';
+            stBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold tracking-wide bg-emerald-500/20 text-emerald-400 border border-emerald-500/40';
+          } else if (st === 'verified') {
+            stBadge.textContent = 'VERIFIED / ROUTED';
+            stBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold tracking-wide bg-blue-500/20 text-blue-400 border border-blue-500/40';
+          } else if (st === 'rejected') {
+            stBadge.textContent = 'REJECTED';
+            stBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold tracking-wide bg-rose-500/20 text-rose-400 border border-rose-500/40';
+          } else {
+            stBadge.textContent = 'PENDING REVIEW';
+            stBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold tracking-wide bg-amber-500/20 text-amber-400 border border-amber-500/40';
+          }
+        }
+
+        // Gemini AI Directive & Recommended Steps
+        const recActionEl = document.getElementById('rd-rec-action');
+        if (recActionEl) {
+          recActionEl.textContent = rep.recommended_action || 'Inspect disposal site and schedule prompt municipal collection.';
+        }
+
+        const stepsEl = document.getElementById('rd-rec-steps');
+        if (stepsEl) {
+          let steps = rep.recommended_steps;
+          if (!steps || !Array.isArray(steps) || steps.length === 0) {
+            steps = [
+              'Deploy appropriate municipal waste collection hopper and safety gear.',
+              'Clear accumulated debris and sanitize immediate perimeter.',
+              'Ensure bin is emptied and return area to clean service.'
+            ];
+          }
+          stepsEl.innerHTML = steps.map((s, idx) => `
+            <li class="flex items-start gap-2.5 text-xs text-slate-300">
+              <span class="flex items-center justify-center size-5 rounded-full bg-primary/20 text-primary font-bold text-[11px] shrink-0 mt-0.5">${idx + 1}</span>
+              <span class="leading-relaxed">${s}</span>
+            </li>
+          `).join('');
+        }
+
+        // Location & Coordinates
+        const locationText = `Site ${rep.bin_id.toUpperCase()} · ${rep.description || rep.message}`;
+        setAddress(locationText);
+
+        if (rep.lat && rep.lng) {
+          setMap(rep.lat, rep.lng);
+        }
+
+        // View on map button
+        const mapBtn = document.getElementById('btn-view-map-detail');
+        if (mapBtn) {
+          mapBtn.onclick = function() {
+            window.focusReportOnMap(rep.id);
+          };
+        }
+
+        // Render dynamic timeline
+        const timelineContainer = document.getElementById('rd-timeline');
+        if (timelineContainer) {
+          let updateBox = '';
+          if (st === 'verified') {
+            updateBox = `
+              <div class="mt-2 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800">
+                <p class="text-sm font-semibold text-blue-800 dark:text-blue-300">✓ Official Verification Confirmed</p>
+                <p class="text-xs text-blue-700 dark:text-blue-400 mt-1">${rep.verification_notes || 'Verified by municipal supervisor. Scheduled as priority collection stop.'}</p>
+              </div>
+            `;
+          } else if (st === 'rejected') {
+            updateBox = `
+              <div class="mt-2 p-3 rounded-lg bg-rose-50 dark:bg-rose-900/30 border border-rose-200 dark:border-rose-800">
+                <p class="text-sm font-semibold text-rose-800 dark:text-rose-300">✕ Official Review: Report Rejected</p>
+                <p class="text-xs text-rose-700 dark:text-rose-400 mt-1">${rep.verification_notes || 'Does not qualify for truck dispatch. Directed to routine grounds sweep.'}</p>
+              </div>
+            `;
+          } else if (st === 'resolved') {
+            updateBox = `
+              <div class="mt-2 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800">
+                <p class="text-sm font-semibold text-emerald-800 dark:text-emerald-300">✓ Waste Cleared & Resolved</p>
+                <p class="text-xs text-emerald-700 dark:text-emerald-400 mt-1">${rep.verification_notes || 'Collection truck visited site and resolved waste pileup.'}</p>
+              </div>
+            `;
+          }
+
+          let step3 = '';
+          if (st === 'verified') {
+            step3 = `
+              <div class="relative flex gap-x-4">
+                <div class="flex flex-col items-center z-10">
+                  <div class="flex items-center justify-center size-10 rounded-full bg-blue-500/20 text-blue-500">
+                    <span class="material-symbols-outlined">local_shipping</span>
+                  </div>
+                </div>
+                <div class="flex-1">
+                  <p class="font-semibold text-gray-900 dark:text-white">Assigned to Collection Route</p>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">Truck route active · Stop pending collection</p>
+                </div>
+              </div>
+            `;
+          } else if (st === 'resolved') {
+            step3 = `
+              <div class="relative flex gap-x-4">
+                <div class="flex flex-col items-center z-10">
+                  <div class="flex items-center justify-center size-10 rounded-full bg-emerald-500/20 text-emerald-500">
+                    <span class="material-symbols-outlined">verified</span>
+                  </div>
+                </div>
+                <div class="flex-1">
+                  <p class="font-semibold text-emerald-600 dark:text-emerald-400">Site Cleaned & Resolved</p>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">Truck emptied bins and cleared waste</p>
+                </div>
+              </div>
+            `;
+          } else if (st === 'rejected') {
+            step3 = `
+              <div class="relative flex gap-x-4">
+                <div class="flex flex-col items-center z-10">
+                  <div class="flex items-center justify-center size-10 rounded-full bg-rose-500/20 text-rose-500">
+                    <span class="material-symbols-outlined">cancel</span>
+                  </div>
+                </div>
+                <div class="flex-1">
+                  <p class="font-semibold text-rose-600 dark:text-rose-400">Excluded from Route</p>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">No collection truck required</p>
+                </div>
+              </div>
+            `;
+          }
+
+          timelineContainer.innerHTML = `
+            <div class="relative flex gap-x-4">
+              <div class="absolute left-5 top-5 -bottom-5 w-0.5 bg-gray-300 dark:bg-gray-700"></div>
+              <div class="flex flex-col items-center z-10">
+                <div class="flex items-center justify-center size-10 rounded-full bg-primary/20 dark:bg-primary/30">
+                  <span class="material-symbols-outlined text-primary">task_alt</span>
+                </div>
+              </div>
+              <div class="flex-1 pb-6">
+                <p class="font-semibold text-gray-900 dark:text-white">Report Submitted</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">${formattedDate}</p>
+              </div>
+            </div>
+
+            <div class="relative flex gap-x-4">
+              <div class="absolute left-5 top-5 -bottom-5 w-0.5 bg-gray-300 dark:bg-gray-700"></div>
+              <div class="flex flex-col items-center z-10">
+                <div class="flex items-center justify-center size-10 rounded-full ${st === 'submitted' ? 'bg-amber-500/20 text-amber-500' : 'bg-primary/20 text-primary'}">
+                  <span class="material-symbols-outlined">${st === 'submitted' ? 'hourglass_top' : 'shield'}</span>
+                </div>
+              </div>
+              <div class="flex-1 pb-6">
+                <p class="font-semibold text-gray-900 dark:text-white">${st === 'submitted' ? 'Under Review by Municipal Team' : 'Municipal Review Completed'}</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">${st === 'submitted' ? 'Awaiting verification from facilities desk' : 'Action decision recorded'}</p>
+                ${updateBox}
+              </div>
+            </div>
+
+            ${step3}
+          `;
+        }
+      } catch (e) {
+        console.warn('Could not fetch report details:', e);
+      }
+    }
+
+    loadReportFromBackend();
+  })();
+</script>
+<script src="./js/i18n.js"></script>
+<script>
+  (function(){ if (window.CivicI18n) window.CivicI18n.applyTranslations(); })();
+</script>
+</body></html>
+

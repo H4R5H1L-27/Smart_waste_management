@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CivicLens - Welcome</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#0b7ada",
+            "background-light": "#f5f7f8",
+            "background-dark": "#101a22",
+          },
+          fontFamily: {
+            "display": ["Space Grotesk"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0', transform: 'translateY(10px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+            pulse: {
+              '0%, 100%': { transform: 'scale(1)', boxShadow: '0 0 0 0 rgba(11, 122, 218, 0.4)' },
+              '50%': { transform: 'scale(1.02)', boxShadow: '0 0 0 10px rgba(11, 122, 218, 0)' },
+            },
+            glow: {
+              '0%, 100%': { textShadow: '0 0 5px rgba(11, 122, 218, 0.5), 0 0 10px rgba(11, 122, 218, 0.3)' },
+              '50%': { textShadow: '0 0 10px rgba(11, 122, 218, 0.8), 0 0 20px rgba(11, 122, 218, 0.5)' },
+            }
+          },
+          animation: {
+            fadeIn: 'fadeIn 1s ease-in-out forwards',
+            pulse: 'pulse 2.5s infinite ease-in-out',
+            glow: 'glow 3s infinite alternate ease-in-out',
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .cityscape-bg {
+      background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCjGUt9dFQNBzvKtBeAhCwJHgMaddn_EIO_jnGGYQyLAHRbmJx5IVJUlfgdqT5eyPrwSwNt78TOPk1Wj0roWp-aRQ4KVFSQlUzVaf-bWJrSamzHUXzQWwYU_9I6jfOth0Rl9iXKwMwDp_VvjXjeYJfupcYSur8jhXgQcyGX__UJIGMY5SdlR3P38ZxOcr3pFewxdPF0gZZAVe9n9H3AL6nhEArtioOUAdjj2F--p_XbAXD3zRiT_0Euh0Wc9RryXGq3upbTzInjOrN6");
+      background-size: cover;
+      background-position: center bottom;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: -1;
+      opacity: 0.3;
+    }
+    .text-fade-in-1 { animation-delay: 0.2s; }
+    .text-fade-in-2 { animation-delay: 0.5s; }
+    .button-fade-in { animation-delay: 0.8s; }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display bg-background-light dark:bg-background-dark">
+<div class="relative flex flex-col h-screen w-full overflow-hidden">
+<div class="cityscape-bg"></div>
+<header class="relative flex items-center justify-center p-6 animate-fadeIn text-fade-in-1 opacity-0">
+<h1 class="text-2xl font-bold text-white animate-glow">CivicLens</h1>
+<select data-lang-selector class="absolute right-6 top-6 rounded-full bg-white/10 text-white text-sm px-3 py-1 border border-white/20 focus:outline-none focus:ring-2 focus:ring-primary">
+  <option value="en">English</option>
+  <option value="hi">हिन्दी</option>
+  <option value="ta">தமிழ்</option>
+  <option value="te">తెలుగు</option>
+  <option value="bn">বাংলা</option>
+  <option value="kn">ಕನ್ನಡ</option>
+  <option value="gu">ગુજરાતી</option>
+  </select>
+</header>
+<main class="flex-grow flex flex-col items-center justify-center text-center px-6">
+<div class="animate-fadeIn text-fade-in-1 opacity-0">
+<h2 class="text-4xl font-bold text-white" data-i18n-key="welcome_title">Become a City Guardian</h2>
+</div>
+<div class="animate-fadeIn text-fade-in-2 opacity-0 mt-2">
+<p class="text-lg text-white/80" data-i18n-key="welcome_tagline">Empower your community. One report at a time.</p>
+</div>
+</main>
+<footer class="p-6">
+<div class="animate-fadeIn button-fade-in opacity-0">
+<a href="permission.html" class="block w-full"><button class="w-full h-14 bg-primary text-white text-lg font-bold rounded-xl shadow-lg animate-pulse focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background-dark focus:ring-primary" data-i18n-key="get_started_button">Get Started</button></a>
+</div>
+</footer>
+</div>
+
+<script src="./js/i18n.js"></script>
+<script>
+  (function(){
+    const sel = document.getElementById('language-selector');
+    if (sel) {
+      sel.addEventListener('change', function(){
+        if (window.CivicI18n) window.CivicI18n.setLanguage(this.value);
+      });
+    }
+  })();
+  </script>
+
+</body></html>
+

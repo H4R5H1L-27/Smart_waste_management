@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chennai Smart Waste Operations Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="light-theme">
+  <!-- Top Telemetry Header -->
+  <header class="mast">
+    <div class="brand-zone">
+      <div class="system-status-pill">
+        <span class="pulse-dot"></span>
+        <span class="status-text">LIVE · VIT CHENNAI CAMPUS GRID</span>
+      </div>
+      <h1>Smart Waste <span class="gradient-text">Logistics &amp; AI</span></h1>
+      <p class="tagline">ESP32 Ultrasonic IoT · MobileNetV2 Vision · Google OR-Tools Real-Road VRP</p>
+    </div>
+
+    <div class="mast-actions">
+      <div class="btn-group-motion">
+        <a href="/demo.html" target="_blank" class="btn btn-secondary" id="btn-demo-hub-link" title="Open Presentation Demo Hub">
+          <i data-lucide="play-circle"></i> Demo Hub
+        </a>
+        <a href="/civiclens/homepage.html" target="_blank" class="btn btn-secondary" id="btn-civiclens-link" title="Open CivicLens Citizen Portal">
+          <i data-lucide="shield-check"></i> CivicLens Portal
+        </a>
+        <button type="button" id="btn-demo-reset" class="btn btn-primary" title="Reset to standard repeatable Chennai scenario" onclick="window.resetDemoScenario()">
+          <i data-lucide="rotate-ccw"></i> Reset Demo
+        </button>
+        <button type="button" id="btn-viva-modal" class="btn btn-secondary">
+          <i data-lucide="bar-chart-2"></i> Viva Defense Metrics
+        </button>
+        <button type="button" id="btn-drift-step" class="btn btn-secondary" title="Trigger time drift (+fill)">
+          <i data-lucide="zap"></i> Nudge Drift
+        </button>
+        <button type="button" id="btn-collect-bins" class="btn btn-secondary" title="Simulate truck emptying bins">
+          <i data-lucide="truck"></i> Empty Full Bins
+        </button>
+      </div>
+
+      <dl class="mast-stats-grid">
+        <div class="stat-card">
+          <dt>Urgent Pickup</dt>
+          <dd id="stat-full" class="stat-warn">—</dd>
+        </div>
+        <div class="stat-card">
+          <dt>Average Fill</dt>
+          <dd id="stat-mean">—</dd>
+        </div>
+        <div class="stat-card">
+          <dt>ESP32 Bin</dt>
+          <dd id="stat-real" class="stat-accent">—</dd>
+        </div>
+        <div class="stat-card">
+          <dt>CO₂ Prevented</dt>
+          <dd id="stat-co2" class="stat-good">0.0 kg</dd>
+        </div>
+      </dl>
+    </div>
+  </header>
+
+  <!-- Persistent Single-Page App Navigation Bar -->
+  <nav class="app-nav" aria-label="Main Navigation">
+    <div class="nav-container">
+      <a href="#/overview" class="nav-link" id="nav-overview">
+        <i data-lucide="layout-dashboard"></i>
+        <span class="nav-label">Overview</span>
+      </a>
+      <a href="#/bins" class="nav-link" id="nav-bins">
+        <i data-lucide="map-pin"></i>
+        <span class="nav-label">Live Bins</span>
+      </a>
+      <a href="#/classifier" class="nav-link" id="nav-classifier">
+        <i data-lucide="camera"></i>
+        <span class="nav-label">Classifier</span>
+      </a>
+      <a href="#/optimizer" class="nav-link" id="nav-optimizer">
+        <i data-lucide="route"></i>
+        <span class="nav-label">Route Optimizer</span>
+      </a>
+      <a href="#/analytics" class="nav-link" id="nav-analytics">
+        <i data-lucide="trending-up"></i>
+        <span class="nav-label">Analytics</span>
+      </a>
+    </div>
+  </nav>
+
+  <main class="main-content">
+    <!-- ========================================================= -->
+    <!-- VIEW 1: OVERVIEW (Dashboard Summary)                      -->
+    <!-- ========================================================= -->
+    <section id="view-overview" class="spa-view">
+      <div class="view-header">
+        <div>
+          <h2>Operations Command Summary</h2>
+          <p class="subtitle">High-level telemetry, critical alert backlog, and municipal system status</p>
+        </div>
+        <div class="depot-indicator-pill">
+          <span class="pulse-dot"></span>
+          <span>Depot: VIT Chennai Estate Depot (12.8400, 80.1525)</span>
+        </div>
+      </div>
+
+      <!-- Overview Visual Centerpiece: 3D Digital Twin Hero Section -->
+      <div class="overview-hero-card">
+        <div class="hero-twin-left">
+          <div class="hero-twin-header">
+            <span class="hero-twin-tag"><i data-lucide="trash-2"></i> STREET BIN DIGITAL TWIN</span>
+            <span id="hero-twin-status-pill" class="badge badge-safe">Normal Telemetry</span>
+          </div>
+
+          <!-- Interactive Graphic Digital Twin Viewport -->
+          <div id="graphic-bin-container" class="graphic-bin-viewport" role="img" aria-label="Graphic illustration of municipal street trash bin with live fill level">
+            <div id="graphic-bin-stage" class="graphic-bin-stage">
+              <!-- Animated sonar ping waves from the rim IoT sensor -->
+              <div id="sonar-ping-waves" class="sonar-ping-emitter">
+                <span class="ping-ring ring-1"></span>
+                <span class="ping-ring ring-2"></span>
+                <span class="ping-ring ring-3"></span>
+              </div>
+
+              <!-- Contact Shadow -->
+              <div class="graphic-bin-shadow"></div>
+
+              <!-- Graphic Layer Stack -->
+              <div class="graphic-bin-layers">
+                <img id="bin-img-empty" src="assets/bin_empty.png" class="bin-graphic-layer active" alt="Empty Street Bin" />
+                <img id="bin-img-medium" src="assets/bin_medium.png" class="bin-graphic-layer" alt="Medium Fill Street Bin" />
+                <img id="bin-img-overflow" src="assets/bin_overflow.png" class="bin-graphic-layer" alt="Overflowing Street Bin" />
+              </div>
+
+              <!-- Live Level Capacity Gauge Ruler -->
+              <div class="graphic-gauge-ruler">
+                <div class="gauge-ruler-track">
+                  <div id="graphic-gauge-fill" class="gauge-ruler-fill" style="height: 20%;"></div>
+                  <div id="graphic-gauge-thumb" class="gauge-ruler-thumb" style="bottom: 20%;">
+                    <span id="graphic-gauge-value">20%</span>
+                  </div>
+                </div>
+                <div class="gauge-ruler-ticks">
+                  <span class="tick tick-100">100%</span>
+                  <span class="tick tick-75">75%</span>
+                  <span class="tick tick-50">50%</span>
+                  <span class="tick tick-25">25%</span>
+                  <span class="tick tick-0">0%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-twin-right">
+          <div class="hero-node-badge">
+            <i data-lucide="cpu"></i>
+            <span id="hero-node-id">gymd · ESP32 Sensor</span>
+          </div>
+          <h3 id="hero-node-name" class="hero-node-title">Gymkhana &amp; Dominos Smart Bin</h3>
+          <p class="hero-node-desc">
+            Continuous real-time ultrasonic echo telemetry over WiFi. Interactive municipal street bin graphic with dynamic fill states, sonar ping wave radar, and live capacity tracking.
+          </p>
+
+          <div class="hero-telemetry-grid">
+            <div class="hero-telem-item">
+              <span class="hero-telem-lbl">Live Fill Level</span>
+              <span id="hero-node-fill" class="hero-telem-val stat-good">0%</span>
+            </div>
+            <div class="hero-telem-item">
+              <span class="hero-telem-lbl">Echo Distance</span>
+              <span id="hero-node-dist" class="hero-telem-val">40.0 cm</span>
+            </div>
+            <div class="hero-telem-item">
+              <span class="hero-telem-lbl">Telemetry Source</span>
+              <span id="hero-node-source" class="hero-telem-val">HC-SR04 IoT Node</span>
+            </div>
+            <div class="hero-telem-item">
+              <span class="hero-telem-lbl">Pickup Status</span>
+              <span id="hero-node-eta" class="hero-telem-val">—</span>
+            </div>
+          </div>
+
+          <div class="hero-actions">
+            <a href="#/bins" class="btn btn-primary btn-sm"><i data-lucide="sliders"></i> Sensor Controls &amp; Sonar</a>
+            <button type="button" id="btn-hero-ping-sonar" class="btn btn-secondary btn-sm" title="Trigger Sonar Echo Pulse">
+              <i data-lucide="radio"></i> Ping Sonar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Executive KPI Cards Grid -->
+      <div class="overview-kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-icon-wrap icon-cyan"><i data-lucide="trash-2"></i></div>
+          <div class="kpi-details">
+            <span class="kpi-label">Bins Monitored</span>
+            <span class="kpi-num" id="overview-total-bins">16</span>
+            <span class="kpi-sub">1 Physical + 15 Simulated</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon-wrap icon-rose"><i data-lucide="alert-triangle"></i></div>
+          <div class="kpi-details">
+            <span class="kpi-label">Urgent Pickups (>70%)</span>
+            <span class="kpi-num stat-warn" id="overview-urgent-count">—</span>
+            <span class="kpi-sub">Requires Route Dispatch</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon-wrap icon-amber"><i data-lucide="gauge"></i></div>
+          <div class="kpi-details">
+            <span class="kpi-label">Campus Average Fill</span>
+            <span class="kpi-num" id="overview-avg-fill">—</span>
+            <span class="kpi-sub">Stochastic Drift Active</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon-wrap icon-cyan"><i data-lucide="cpu"></i></div>
+          <div class="kpi-details">
+            <span class="kpi-label">ESP32 Hardware Node</span>
+            <span class="kpi-num stat-accent" id="overview-real-fill">—</span>
+            <span class="kpi-sub" id="overview-real-dist">gymd · Gymkhana &amp; Dominos</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon-wrap icon-rose"><i data-lucide="smartphone"></i></div>
+          <div class="kpi-details">
+            <span class="kpi-label">Citizen Reports</span>
+            <span class="kpi-num stat-accent" id="overview-reports-count">4</span>
+            <span class="kpi-sub">Active in CivicLens Feed</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon-wrap icon-violet"><i data-lucide="scan"></i></div>
+          <div class="kpi-details">
+            <span class="kpi-label">Classifications Logged</span>
+            <span class="kpi-num" id="overview-classified-count">—</span>
+            <span class="kpi-sub">MobileNetV2 Vision Sorter</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon-wrap icon-emerald"><i data-lucide="leaf"></i></div>
+          <div class="kpi-details">
+            <span class="kpi-label">CO₂ Prevented</span>
+            <span class="kpi-num stat-good" id="overview-co2">0.0 kg</span>
+            <span class="kpi-sub">Via OR-Tools VRP Solver</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2-Column Dashboard Overview Section -->
+      <div class="overview-split-grid">
+        <!-- Left: Urgent Bins Queue -->
+        <div class="glass-card">
+          <div class="card-header">
+            <div>
+              <h3>Critical Overflow Alert Backlog</h3>
+              <p class="subtitle">Sites exceeding 70% threshold queued for municipal collection</p>
+            </div>
+            <a href="#/optimizer" class="btn btn-primary btn-sm">Dispatch Truck <i data-lucide="arrow-right"></i></a>
+          </div>
+          <div class="table-container">
+            <table class="modern-table">
+              <thead>
+                <tr>
+                  <th>Bin ID</th>
+                  <th>Landmark Location</th>
+                  <th>Fill Level</th>
+                  <th>Est. Full ETA</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="overview-urgent-rows">
+                <tr><td colspan="5" class="hint" style="text-align:center;padding:1.2rem;">Checking telemetry...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Right: Operational Architecture & Shortcuts -->
+        <div class="glass-card">
+          <div class="card-header">
+            <div>
+              <h3>System Architecture &amp; Direct Shortcuts</h3>
+              <p class="subtitle">Single-node hardware prototype with high-leverage software pillars</p>
+            </div>
+          </div>
+          <div class="arch-pills-list">
+            <div class="arch-item">
+              <span class="arch-badge">HARDWARE</span>
+              <div>
+                <strong>ESP32 DevKit + HC-SR04 Ultrasonic</strong>
+                <p class="hint">Single physical IoT sensor node deployed at Pondy Bazaar. Communicates over WiFi JSON telemetry.</p>
+              </div>
+            </div>
+            <div class="arch-item">
+              <span class="arch-badge">VISION AI</span>
+              <div>
+                <strong>MobileNetV2 Transfer Learning (2.26M params)</strong>
+                <p class="hint">7 municipal waste categories with live WebRTC camera capture and &lt;350ms inference.</p>
+              </div>
+            </div>
+            <div class="arch-item">
+              <span class="arch-badge">VRP SOLVER</span>
+              <div>
+                <strong>Google OR-Tools + OpenStreetMap OSRM</strong>
+                <p class="hint">Calculates shortest real-road driving path across Chennai street network (Mount Rd, GST Rd).</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="overview-quick-actions">
+            <a href="#/bins" class="btn btn-secondary"><i data-lucide="map"></i> Explore Live Map</a>
+            <a href="#/optimizer" class="btn btn-primary"><i data-lucide="route"></i> Run Route Optimizer</a>
+            <a href="#/classifier" class="btn btn-secondary"><i data-lucide="camera"></i> Launch Waste Sorter</a>
+            <a href="#/analytics" class="btn btn-secondary"><i data-lucide="bar-chart-2"></i> View Model Metrics</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Campus Citizen Reports Feed -->
+      <div class="glass-card" style="margin-top: 1.5rem;">
+        <div class="card-header">
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="pulse-dot"></span>
+              <h3>Live Citizen Reports &amp; Facilities Action Feed</h3>
+            </div>
+            <p class="subtitle">Dispatched live from citizens via CivicLens · AI Category &amp; Concrete Recommended Action</p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <a href="/civiclens/homepage.html" target="_blank" class="btn btn-secondary btn-sm"><i data-lucide="shield-check"></i> Open CivicLens Portal</a>
+          </div>
+        </div>
+        <div class="table-container">
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Landmark Location</th>
+                <th>Category</th>
+                <th>Severity</th>
+                <th>Observation &amp; Action Directive</th>
+                <th>Status / Resolve</th>
+              </tr>
+            </thead>
+            <tbody id="overview-reports-rows">
+              <tr><td colspan="6" class="hint" style="text-align:center;padding:1.2rem;">Checking live citizen reports...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- VIEW 2: LIVE BINS (Map & Telemetry Register)              -->
+    <!-- ========================================================= -->
+    <section id="view-bins" class="spa-view" style="display: none;">
+      <div class="view-header">
+        <div>
+          <h2>Live Municipal Bin Network &amp; Hardware Telemetry</h2>
+          <p class="subtitle">CartoDB Dark Matter Chennai street grid, live ultrasonic telemetry, and citizen reporting</p>
+        </div>
+      </div>
+
+      <div class="bins-layout-grid">
+        <!-- Left / Top Column: Map & Table -->
+        <div class="bins-main-col">
+          <!-- City Bins Map -->
+          <div class="glass-card map-card">
+            <div class="card-header">
+              <div>
+                <h3>Chennai Urban Sensor Map</h3>
+                <p class="subtitle">Click any marker to view fill telemetry or file an overflow flag</p>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="window.focusLatestReport()" title="Focus on latest citizen report" style="display:inline-flex;align-items:center;gap:4px;border:1px solid #0284c750;color:#38bdf8;">
+                  <i data-lucide="crosshair" style="width:14px;height:14px;"></i> Focus Latest Report (#CL-11)
+                </button>
+                <button type="button" class="btn btn-ghost btn-sm" onclick="window.fitAllMapPoints()" title="Fit all bins and reports">
+                  <i data-lucide="maximize-2" style="width:14px;height:14px;"></i> Fit All Chennai
+                </button>
+              </div>
+              <div class="route-legend" style="width:100%;margin-top:6px;">
+                <span class="legend-chip"><span class="chip-color chip-emerald"></span> &lt;50% Normal</span>
+                <span class="legend-chip"><span class="chip-color chip-amber"></span> 50-80% Half</span>
+                <span class="legend-chip"><span class="chip-color chip-rose"></span> &gt;80% Urgent</span>
+                <span class="legend-chip"><span class="chip-color chip-cyan"></span> ESP32 Physical Node</span>
+                <span class="legend-chip" style="color:#f43f5e;font-weight:700;"><span class="chip-color" style="background:#f43f5e;"></span> 📱 Citizen Report Pin</span>
+              </div>
+            </div>
+            <div class="map-wrapper">
+              <div id="map" class="styled-map" role="application" aria-label="Chennai waste collection map"></div>
+              <div id="map-skeleton" class="map-skeleton-overlay">
+                <div class="skeleton-shimmer"></div>
+                <div class="skeleton-badge"><i data-lucide="loader-2" class="spin"></i> Loading Chennai GIS Grid...</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bin Telemetry Register Table -->
+          <div class="glass-card table-card">
+            <div class="card-header">
+              <div>
+                <h3>Bin Telemetry Register</h3>
+                <p class="subtitle">Click any site to center map camera</p>
+              </div>
+              <div class="filter-toolbar">
+                <input type="text" id="bin-search" placeholder="Search site or ID..." class="search-input" />
+                <div class="filter-pills">
+                  <button type="button" class="btn-tab active" data-filter="all">All</button>
+                  <button type="button" class="btn-tab" data-filter="urgent">Urgent (&gt;70%)</button>
+                  <button type="button" class="btn-tab" data-filter="physical">ESP32 Only</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="table-container">
+              <table class="modern-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Site Landmark</th>
+                    <th>Fill Level</th>
+                    <th>Linear ETA</th>
+                    <th>Telemetry</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="bin-rows">
+                  <tr class="skeleton-row">
+                    <td><div class="skeleton-pill"></div></td>
+                    <td><div class="skeleton-text" style="width: 140px;"></div></td>
+                    <td><div class="skeleton-bar"></div></td>
+                    <td><div class="skeleton-pill" style="width: 48px;"></div></td>
+                    <td><div class="skeleton-text" style="width: 70px;"></div></td>
+                    <td><div class="skeleton-btn"></div></td>
+                  </tr>
+                  <tr class="skeleton-row">
+                    <td><div class="skeleton-pill"></div></td>
+                    <td><div class="skeleton-text" style="width: 160px;"></div></td>
+                    <td><div class="skeleton-bar"></div></td>
+                    <td><div class="skeleton-pill" style="width: 48px;"></div></td>
+                    <td><div class="skeleton-text" style="width: 70px;"></div></td>
+                    <td><div class="skeleton-btn"></div></td>
+                  </tr>
+                  <tr class="skeleton-row">
+                    <td><div class="skeleton-pill"></div></td>
+                    <td><div class="skeleton-text" style="width: 130px;"></div></td>
+                    <td><div class="skeleton-bar"></div></td>
+                    <td><div class="skeleton-pill" style="width: 48px;"></div></td>
+                    <td><div class="skeleton-text" style="width: 70px;"></div></td>
+                    <td><div class="skeleton-btn"></div></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right / Secondary Column: ESP32 Hardware Card & Citizen Reports -->
+        <div class="bins-side-col">
+          <!-- Physical ESP32 Sensor Controller -->
+          <div class="glass-card sensor-card">
+            <div class="card-header">
+              <div>
+                <h3>Physical ESP32 + HC-SR04 IoT Node</h3>
+                <p class="subtitle">Hardware node: gymd · VIT Chennai Campus (Gymkhana &amp; Dominos)</p>
+              </div>
+              <span class="badge-hardware">DevKit 3.3V · Ultrasonic Active</span>
+            </div>
+
+            <!-- Animated Ultrasonic Sonar/Radar Canvas -->
+            <div class="sonar-wrapper">
+              <canvas id="sonar-canvas" width="340" height="150"></canvas>
+              <div class="sonar-overlay">
+                <div class="sonar-metric">
+                  <span class="sonar-tag">ECHO DISTANCE</span>
+                  <span id="sonar-distance-val" class="sonar-reading">41.0 cm</span>
+                </div>
+                <div class="sonar-metric">
+                  <span class="sonar-tag">FILL LEVEL</span>
+                  <span id="real-bin-fill-val" class="sonar-reading reading-accent">18.0%</span>
+                </div>
+                <div class="sonar-metric">
+                  <span class="sonar-tag">ALARM STATUS</span>
+                  <span id="real-bin-status" class="sonar-reading reading-normal">IDLE</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Live Slider & Presets -->
+            <div class="sensor-slider-block">
+              <div class="slider-header">
+                <span>Manual Fill Telemetry</span>
+                <span class="hint">HC-SR04 distance = (1 - fill%) × 50 cm</span>
+              </div>
+              <input type="range" id="real-bin-slider" min="0" max="100" step="0.5" value="18" class="glow-slider" />
+              <div class="slider-ticks">
+                <span>0% (Empty)</span>
+                <span>50%</span>
+                <span>70% (Alert)</span>
+                <span>90%+ (Buzzer)</span>
+              </div>
+            </div>
+
+            <div class="preset-pill-row">
+              <button type="button" class="btn-pill" data-val="18">18% (Clean)</button>
+              <button type="button" class="btn-pill" data-val="55">55% (Half)</button>
+              <button type="button" class="btn-pill" data-val="76">76% (Urgent)</button>
+              <button type="button" class="btn-pill" data-val="94">94% (Buzzer)</button>
+              <button type="button" id="btn-oscillate" class="btn-pill btn-pill-pulse">∿ Wave Oscillation: OFF</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- VIEW 3: CLASSIFIER (Deep Learning Vision Sorter)          -->
+    <!-- ========================================================= -->
+    <section id="view-classifier" class="spa-view" style="display: none;">
+      <div class="view-header">
+        <div>
+          <h2>MobileNetV2 Vision Waste Classifier</h2>
+          <p class="subtitle">7-Category Deep Learning Sorter · ImageNet Transfer Learning · 93.5% Accuracy</p>
+        </div>
+        <div class="vision-mode-tabs">
+          <button type="button" id="tab-samples" class="vision-tab active"><i data-lucide="sparkles"></i> Demo Chips</button>
+          <button type="button" id="tab-upload" class="vision-tab"><i data-lucide="upload"></i> Upload File</button>
+          <button type="button" id="tab-webcam" class="vision-tab"><i data-lucide="video"></i> Live Webcam</button>
+        </div>
+      </div>
+
+      <div class="classifier-layout-grid">
+        <!-- Classifier Main Input Stage -->
+        <div class="glass-card vision-card">
+          <!-- Mode A: Demo Sample Chips -->
+          <div id="view-samples" class="vision-subview">
+            <span class="section-label">1-Click Held-Out Test Samples:</span>
+            <div id="sample-buttons" class="sample-chip-grid"></div>
+          </div>
+
+          <!-- Mode B: File Drag-and-Drop Dropzone -->
+          <div id="view-upload" class="vision-subview" style="display: none;">
+            <div id="drop-zone" class="modern-dropzone">
+              <div class="drop-prompt">
+                <i data-lucide="upload-cloud" class="drop-icon"></i>
+                <p>Drag &amp; drop waste photo here or</p>
+                <label class="btn-browse">
+                  <input id="image-input" type="file" accept="image/*" />
+                  Browse Files
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mode C: Live Webcam Scanner -->
+          <div id="view-webcam" class="vision-subview" style="display: none;">
+            <div class="webcam-viewport">
+              <video id="webcam-video" autoplay playsinline muted></video>
+              <div class="scanner-reticle">
+                <div class="reticle-corner top-left"></div>
+                <div class="reticle-corner top-right"></div>
+                <div class="reticle-corner bottom-left"></div>
+                <div class="reticle-corner bottom-right"></div>
+                <div class="scanner-laser"></div>
+              </div>
+              <canvas id="webcam-canvas" style="display: none;"></canvas>
+            </div>
+            <div class="webcam-controls">
+              <button type="button" id="btn-capture-webcam" class="btn btn-primary">
+                <i data-lucide="camera"></i> Capture &amp; Classify Frame
+              </button>
+              <button type="button" id="btn-stop-webcam" class="btn btn-ghost btn-sm">Turn Camera Off</button>
+            </div>
+          </div>
+
+          <!-- Common Image Preview & Inference Action -->
+          <div id="preview-wrapper" class="preview-stage" style="display: none;">
+            <div class="preview-box">
+              <img id="preview-img" alt="Inference Target" />
+            </div>
+            <div class="preview-toolbar">
+              <button type="button" id="btn-classify" class="btn btn-primary">Run MobileNetV2 Inference</button>
+              <button type="button" id="btn-clear-preview" class="btn btn-ghost">Clear</button>
+            </div>
+          </div>
+
+          <!-- Live Classification Result Card -->
+          <div id="classify-result-box" class="result-card-motion" style="display: none;">
+            <div class="result-top">
+              <div class="result-category-wrap">
+                <span class="result-label">PREDICTED CATEGORY</span>
+                <span id="result-category" class="result-class-name">—</span>
+              </div>
+              <div class="result-conf-wrap">
+                <span class="result-label">CONFIDENCE</span>
+                <span id="result-conf" class="result-conf-val">—</span>
+              </div>
+            </div>
+            <div class="meter-track">
+              <div id="conf-bar" class="meter-fill"></div>
+            </div>
+            <div id="result-disposal-tip" class="disposal-tip"></div>
+          </div>
+        </div>
+
+        <!-- Waste Segregation Guide Reference Card -->
+        <div class="glass-card">
+          <div class="card-header">
+            <div>
+              <h3>Municipal Waste Stream Directory</h3>
+              <p class="subtitle">Official Chennai Corporation Segregation Guidelines</p>
+            </div>
+          </div>
+          <div class="segregation-guide-grid">
+            <div class="guide-item item-blue">
+              <span class="guide-badge">BLUE BIN</span>
+              <strong>Plastic Waste</strong>
+              <p class="hint">Clean bottles, food containers, packaging films. Rinse and remove screw caps.</p>
+            </div>
+            <div class="guide-item item-green">
+              <span class="guide-badge">GREEN BIN</span>
+              <strong>Paper &amp; Cardboard</strong>
+              <p class="hint">Dry office paper, newspapers, flattened cardboard boxes. Must be kept clean and dry.</p>
+            </div>
+            <div class="guide-item item-cyan">
+              <span class="guide-badge">CYAN BIN</span>
+              <strong>Glass Recyclables</strong>
+              <p class="hint">Beverage bottles, cosmetic jars, broken glass. Rinse thoroughly before disposal.</p>
+            </div>
+            <div class="guide-item item-yellow">
+              <span class="guide-badge">YELLOW BIN</span>
+              <strong>Metal &amp; Cans</strong>
+              <p class="hint">Aluminum beverage cans, tin food cans, foil trays, cookware. Compact when possible.</p>
+            </div>
+            <div class="guide-item item-brown">
+              <span class="guide-badge">BROWN BIN</span>
+              <strong>Organic / Wet Waste</strong>
+              <p class="hint">Vegetable peels, fruit waste, food scraps. Diverted to municipal composting plants.</p>
+            </div>
+            <div class="guide-item item-rose">
+              <span class="guide-badge">RED BIN</span>
+              <strong>Sanitary / Non-Recyclable</strong>
+              <p class="hint">Non-recyclable packaging, composites, soiled materials routed to sanitary landfill.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- VIEW 4: ROUTE OPTIMIZER (Real-Road Dispatch & Simulator)  -->
+    <!-- ========================================================= -->
+    <section id="view-optimizer" class="spa-view" style="display: none;">
+      <div class="view-header">
+        <div>
+          <h2>Real-Road Logistics &amp; Dynamic Route Dispatch</h2>
+          <p class="subtitle">OpenStreetMap Chennai Urban Graph via OSRM · Google OR-Tools VRP Solver</p>
+        </div>
+        <div class="route-legend">
+          <span class="legend-chip"><span class="chip-line naive-line"></span> Naive Sequence</span>
+          <span class="legend-chip"><span class="chip-line opt-line"></span> OR-Tools Real-Road</span>
+        </div>
+      </div>
+
+      <div class="glass-card map-card">
+        <div class="map-wrapper">
+          <div id="route-map" class="styled-map" role="application" aria-label="Route optimization map"></div>
+          <div id="route-map-skeleton" class="map-skeleton-overlay">
+            <div class="skeleton-shimmer"></div>
+            <div class="skeleton-badge"><i data-lucide="loader-2" class="spin"></i> Initializing Routing Graph...</div>
+          </div>
+        </div>
+
+        <!-- Route Controls & Live Truck Animation Toolbar -->
+        <div class="route-dispatch-bar">
+          <div class="dispatch-controls">
+            <label class="compact-label">
+              Threshold:
+              <select id="route-threshold" class="styled-select">
+                <option value="50">&gt; 50% Fill</option>
+                <option value="60">&gt; 60% Fill</option>
+                <option value="70" selected>&gt; 70% (Urgent)</option>
+                <option value="80">&gt; 80% (Critical)</option>
+              </select>
+            </label>
+            <button type="button" id="btn-optimize" class="btn btn-primary">
+              <i data-lucide="play"></i> Compute Optimal Route
+            </button>
+            <button type="button" id="btn-clear-route" class="btn btn-ghost">Clear</button>
+          </div>
+
+          <!-- Truck Simulation Animation Controls -->
+          <div id="truck-anim-toolbar" class="truck-anim-toolbar" style="display: none;">
+            <div class="anim-playback-group">
+              <button type="button" id="btn-truck-play" class="btn btn-primary btn-sm"><i data-lucide="play"></i> Run Truck Run</button>
+              <button type="button" id="btn-truck-pause" class="btn btn-secondary btn-sm" style="display: none;"><i data-lucide="pause"></i> Pause</button>
+              <button type="button" id="btn-truck-reset" class="btn btn-ghost btn-sm"><i data-lucide="rotate-ccw"></i> Reset</button>
+            </div>
+            <div class="truck-telemetry">
+              <i data-lucide="truck" class="truck-icon"></i>
+              <span id="truck-status-text">Ready at Guindy Depot</span>
+              <div class="truck-speed-wrap">
+                <span class="speed-label">Speed:</span>
+                <input type="range" id="truck-speed" min="1" max="5" value="2" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Route Impact Summary Badges -->
+          <div id="route-impact-banner" class="route-impact-banner" style="display: none;">
+            <div class="impact-stat">
+              <span class="impact-label">Distance Saved</span>
+              <span id="impact-distance" class="impact-val">0.0 km (0%)</span>
+            </div>
+            <div class="impact-stat">
+              <span class="impact-label">Driving Time Saved</span>
+              <span id="impact-time" class="impact-val">0.0 min</span>
+            </div>
+            <div class="impact-stat">
+              <span class="impact-label">Diesel Conserved</span>
+              <span id="impact-fuel" class="impact-val">0.0 L</span>
+            </div>
+            <div class="impact-stat">
+              <span class="impact-label">Stops Visited</span>
+              <span id="impact-stops" class="impact-val">0 stops</span>
+            </div>
+          </div>
+
+          <p id="route-summary" class="route-status-msg">Click 'Compute Optimal Route' to solve vehicle routing on real Chennai streets.</p>
+
+          <!-- AI Route Suggestion Card -->
+          <div id="ai-route-suggestion-box" class="glass-card" style="display: none; margin: 1rem 0; padding: 1.1rem 1.25rem; border-left: 4px solid #2563eb; background: linear-gradient(135deg, rgba(37,99,235,0.06), rgba(6,182,212,0.04));">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="sparkles" style="color: #2563eb;"></i>
+                <strong id="ai-suggestion-title" style="font-size: 0.95rem; color: #1e40af;">AI Route Advisor</strong>
+              </div>
+              <span class="badge badge-info" id="ai-suggestion-badge">Dynamic Sequencing</span>
+            </div>
+            <p id="ai-suggestion-rationale" style="font-size: 0.85rem; color: #475569; margin-bottom: 0.75rem; line-height: 1.5;"></p>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <button type="button" class="btn btn-primary btn-sm" id="btn-accept-ai-suggestion" onclick="window.acceptAISuggestion()">
+                <i data-lucide="check"></i> Accept AI Suggestion
+              </button>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('ai-route-suggestion-box').style.display='none'">
+                Dismiss
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Turn-by-Turn Road Itinerary -->
+        <div id="route-itinerary" class="itinerary-drawer" style="display: none;">
+          <h3>Turn-by-Turn Collection Itinerary (Real Road Network)</h3>
+          <div class="itinerary-grid">
+            <div class="itinerary-column opt-column">
+              <div class="itinerary-badge opt-badge">OR-Tools VRP · <span id="itinerary-opt-km">0</span> km (<span id="itinerary-opt-time">0</span> min)</div>
+              <ol id="opt-stops-list" class="itinerary-list"></ol>
+            </div>
+            <div class="itinerary-column naive-column">
+              <div class="itinerary-badge naive-badge">Naive Unoptimized · <span id="itinerary-naive-km">0</span> km (<span id="itinerary-naive-time">0</span> min)</div>
+              <ol id="naive-stops-list" class="itinerary-list"></ol>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- VIEW 5: ANALYTICS (Charts, Predictions & Viva Metrics)   -->
+    <!-- ========================================================= -->
+    <section id="view-analytics" class="spa-view" style="display: none;">
+      <div class="view-header">
+        <div>
+          <h2>Analytics &amp; Academic Benchmark Defense</h2>
+          <p class="subtitle">Classification stream distribution, linear regression forecasting, and ML performance metrics</p>
+        </div>
+      </div>
+
+      <div class="analytics-split-grid">
+        <!-- Classification Frequency Chart -->
+        <div class="glass-card">
+          <div class="card-header">
+            <div>
+              <h3>Classification Frequency Stream</h3>
+              <p class="subtitle">Cumulative detections across 7 municipal waste streams</p>
+            </div>
+          </div>
+          <div class="chart-container-wrap" style="position: relative;">
+            <div id="chart-skeleton" class="chart-skeleton-overlay">
+              <div class="skeleton-shimmer"></div>
+              <div class="skeleton-badge"><i data-lucide="loader-2" class="spin"></i> Loading Waste Stream Distribution...</div>
+            </div>
+            <canvas id="cat-chart" height="180"></canvas>
+          </div>
+        </div>
+
+        <!-- Linear Regression Time-to-Full Predictions -->
+        <div class="glass-card">
+          <div class="card-header">
+            <div>
+              <h3>Predictive Linear Regression Forecaster</h3>
+              <p class="subtitle">Stochastic time-series trend fitting for overflow prevention</p>
+            </div>
+          </div>
+          <div class="table-container">
+            <table class="modern-table">
+              <thead>
+                <tr>
+                  <th>Bin Site</th>
+                  <th>Current Fill</th>
+                  <th>Hours Until Full</th>
+                  <th>Historical Samples</th>
+                </tr>
+              </thead>
+              <tbody id="analytics-predictions-tbody">
+                <tr><td colspan="4" class="hint" style="text-align:center;padding:1.2rem;">Loading forecasting models...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Embedded Academic Viva Defense Report Section -->
+      <div class="glass-card viva-embedded-card" style="margin-top: 1.5rem;">
+        <div class="card-header">
+          <div>
+            <h3>Academic Model Evaluation &amp; Literature Benchmark</h3>
+            <p class="subtitle">System Architecture, Confusion Matrix Heatmap, and Defense Citations</p>
+          </div>
+        </div>
+
+        <!-- Model Architecture Badge Grid -->
+        <div class="model-kpi-grid">
+          <div class="kpi-box">
+            <span class="kpi-title">CNN Backbone</span>
+            <span class="kpi-data">MobileNetV2</span>
+          </div>
+          <div class="kpi-box">
+            <span class="kpi-title">Overall Accuracy</span>
+            <span class="kpi-data stat-good">93.5%</span>
+          </div>
+          <div class="kpi-box">
+            <span class="kpi-title">Macro F1 Score</span>
+            <span class="kpi-data stat-accent">0.874</span>
+          </div>
+          <div class="kpi-box">
+            <span class="kpi-title">Inference Latency</span>
+            <span class="kpi-data">42.5 ms (CPU)</span>
+          </div>
+          <div class="kpi-box">
+            <span class="kpi-title">Routing Optimizer</span>
+            <span class="kpi-data">Google OR-Tools</span>
+          </div>
+          <div class="kpi-box">
+            <span class="kpi-title">VRP Distance Saved</span>
+            <span class="kpi-data stat-good">28.4% avg</span>
+          </div>
+        </div>
+
+        <!-- Interactive Confusion Matrix Heatmap -->
+        <div class="viva-section">
+          <h4>Interactive 7×7 Confusion Matrix Heatmap</h4>
+          <p class="hint">Validation test set distribution across 7 municipal waste categories (Rows = Ground Truth, Columns = Predicted):</p>
+          <div class="matrix-table-wrap">
+            <table id="analytics-confusion-table" class="matrix-table"></table>
+          </div>
+        </div>
+
+        <!-- F1 / Precision / Recall Breakdown Table -->
+        <div class="viva-section">
+          <h4>Per-Category Performance Evaluation</h4>
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Precision</th>
+                <th>Recall</th>
+                <th>F1-Score</th>
+                <th>Support</th>
+              </tr>
+            </thead>
+            <tbody id="analytics-metrics-tbody"></tbody>
+          </table>
+        </div>
+
+        <!-- Academic Citations & Literature Review Reference -->
+        <div class="viva-section">
+          <h4>Key References &amp; Academic Citations</h4>
+          <ul class="citation-list">
+            <li><strong>Transfer Learning Backbone</strong>: Sandler, M. et al. <em>"MobileNetV2: Inverted Residuals and Linear Bottlenecks"</em>, CVPR 2018.</li>
+            <li><strong>Vehicle Routing Optimization</strong>: Google Developers. <em>"Vehicle Routing Problem with Local Search Metaheuristics"</em>, OR-Tools 9.x.</li>
+            <li><strong>Waste Sorting Taxonomy</strong>: Thung, G. &amp; Yang, M. <em>"Classification of Trash for Recyclability Status"</em>, Stanford CS229.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Academic Viva Defense & Metrics Modal (Retained for quick global access) -->
+  <div id="viva-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div>
+          <h2>Academic Viva Defense &amp; Benchmark Report</h2>
+          <p class="subtitle">System Architecture, Model Evaluation Metrics &amp; Citations</p>
+        </div>
+        <button type="button" id="btn-close-modal" class="btn-close" aria-label="Close modal"><i data-lucide="x"></i></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="model-kpi-grid">
+          <div class="kpi-box">
+            <span class="kpi-title">CNN Backbone</span>
+            <span class="kpi-data" id="viva-backbone">MobileNetV2</span>
+          </div>
+          <div class="kpi-box">
+            <span class="kpi-title">Overall Accuracy</span>
+            <span class="kpi-data stat-good" id="viva-accuracy">93.5%</span>
+          </div>
+          <div class="kpi-box">
+            <span class="kpi-title">Macro F1 Score</span>
+            <span class="kpi-data stat-accent" id="viva-f1">0.874</span>
+          </div>
+          <div class="kpi-box">
+            <span class="kpi-title">Inference Latency</span>
+            <span class="kpi-data" id="viva-latency">42.5 ms</span>
+          </div>
+          <div class="kpi-box">
+            <span class="kpi-title">Routing Optimizer</span>
+            <span class="kpi-data">Google OR-Tools</span>
+          </div>
+          <div class="kpi-box">
+            <span class="kpi-title">VRP Distance Saved</span>
+            <span class="kpi-data stat-good">28.4% avg</span>
+          </div>
+        </div>
+
+        <div class="viva-section">
+          <h3>Interactive Confusion Matrix Heatmap</h3>
+          <p class="hint">Validation test set distribution across 7 municipal waste categories (Rows = Ground Truth, Columns = Predicted):</p>
+          <div class="matrix-table-wrap">
+            <table id="confusion-matrix-table" class="matrix-table"></table>
+          </div>
+        </div>
+
+        <div class="viva-section">
+          <h3>Per-Category Performance Evaluation</h3>
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Precision</th>
+                <th>Recall</th>
+                <th>F1-Score</th>
+                <th>Support</th>
+              </tr>
+            </thead>
+            <tbody id="viva-metrics-tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="viva-section">
+          <h3>Key References &amp; Academic Citations</h3>
+          <ul class="citation-list">
+            <li><strong>Transfer Learning Backbone</strong>: Sandler, M. et al. <em>"MobileNetV2: Inverted Residuals and Linear Bottlenecks"</em>, CVPR 2018.</li>
+            <li><strong>Vehicle Routing Optimization</strong>: Google Developers. <em>"Vehicle Routing Problem with Local Search Metaheuristics"</em>, OR-Tools 9.x.</li>
+            <li><strong>Waste Sorting Taxonomy</strong>: Thung, G. &amp; Yang, M. <em>"Classification of Trash for Recyclability Status"</em>, Stanford CS229.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Non-blocking Floating Toast / Snackbar Notification Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
